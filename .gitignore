@@ -1,0 +1,16 @@
+# Editor
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Cache
+dist/
+cache/
+
+# Env
+.env
