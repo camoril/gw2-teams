@@ -116,6 +116,37 @@
             background: rgba(0, 212, 255, 0.2);
             color: #00d4ff;
         }
+
+        /* Tags style */
+        .tag-pill {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            background: rgba(0, 212, 255, 0.15);
+            color: #a0e8ff;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            margin-right: 6px;
+            margin-bottom: 4px;
+        }
+
+        /* Print-friendly adjustments */
+        @media print {
+            body {
+                background: #fff !important;
+                color: #000 !important;
+            }
+            .form-card, .roster-table, .badge, .tag-pill {
+                box-shadow: none !important;
+            }
+            .btn-primary, .btn-secondary, button, input[type="file"] {
+                display: none !important;
+            }
+            .form-card {
+                background: #fff !important;
+                border: 1px solid #ccc !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -281,6 +312,17 @@
                                 ></textarea>
                             </div>
 
+                            <!-- Tags -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-semibold mb-2">Tags (comma-separated, optional)</label>
+                                <input 
+                                    type="text" 
+                                    id="tags" 
+                                    class="input-field w-full"
+                                    placeholder="commander, backup, flex"
+                                >
+                            </div>
+
                             <!-- Buttons -->
                             <div class="flex gap-4">
                                 <button type="submit" class="btn-primary">Add Character</button>
@@ -356,6 +398,55 @@
             <div class="mt-12">
                 <div class="form-card">
                     <h2 class="text-2xl font-bold mb-6 gw2-brand">Team Roster</h2>
+
+                    <!-- Filters and Sorting -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="space-y-2">
+                            <input id="filterSearch" class="input-field w-full" type="text" placeholder="Search player / character / notes" aria-label="Search roster" />
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                <select id="filterRole" class="input-field w-full" aria-label="Filter by role">
+                                    <option value="">All roles</option>
+                                    <option value="ranged-healer">Ranged Healer</option>
+                                    <option value="melee-healer">Melee Healer</option>
+                                    <option value="cleanse-support">Cleanse Support</option>
+                                    <option value="boon-support">Boon Support</option>
+                                    <option value="frontline-dps">Frontline DPS</option>
+                                    <option value="ranged-dps">Ranged DPS</option>
+                                    <option value="backline-dps">Backline DPS</option>
+                                    <option value="utility">Utility</option>
+                                    <option value="flexible">Flexible</option>
+                                </select>
+                                <select id="filterGear" class="input-field w-full" aria-label="Filter by gear">
+                                    <option value="">All gear</option>
+                                    <option value="legendary">Legendary</option>
+                                    <option value="ascended">Ascended</option>
+                                    <option value="exotic">Exotic</option>
+                                    <option value="rare">Rare</option>
+                                    <option value="mixed">Mixed / Leveling</option>
+                                </select>
+                                <input id="filterTag" class="input-field w-full" type="text" placeholder="Filter by tag" aria-label="Filter by tag" />
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="grid grid-cols-3 gap-2 items-center">
+                                <label class="text-sm text-gray-400" for="sortField">Sort</label>
+                                <select id="sortField" class="input-field w-full" aria-label="Sort field">
+                                    <option value="playerName">Player</option>
+                                    <option value="characterName">Character</option>
+                                    <option value="role">Role</option>
+                                    <option value="classSpec">Class / Spec</option>
+                                    <option value="gear">Gear</option>
+                                </select>
+                                <button id="sortDirectionBtn" class="btn-secondary" aria-label="Toggle sort direction">Asc</button>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <button id="applyFiltersBtn" class="btn-primary">Apply Filters</button>
+                                <button id="clearFiltersBtn" class="btn-secondary">Clear</button>
+                                <button id="exportCsvBtn" class="btn-secondary">Export Filtered (CSV)</button>
+                                <button id="exportFilteredJsonBtn" class="btn-secondary">Export Filtered (JSON)</button>
+                            </div>
+                        </div>
+                    </div>
                     
                     <div class="overflow-x-auto">
                         <table class="roster-table" id="rosterTable">
@@ -410,6 +501,13 @@
     </div>
 
     <script>
+        // Allowed values
+        const allowedRoles = [
+            "ranged-healer", "melee-healer", "cleanse-support", "boon-support",
+            "frontline-dps", "ranged-dps", "backline-dps", "utility", "flexible"
+        ];
+        const allowedGear = ["legendary", "ascended", "exotic", "rare", "mixed"];
+
         // Boons Database - What boons can each class/spec provide
         const boonsByClass = {
             "guardian": ["Aegis", "Protection", "Regeneration", "Resistance"],
@@ -495,6 +593,25 @@
         const rosterData = JSON.parse(localStorage.getItem('gw2Roster')) || [];
         const squadsData = JSON.parse(localStorage.getItem('gw2Squads')) || [];
 
+        // Validation helpers
+        function validateCharacterRecord(rec) {
+            const errors = [];
+            if (!rec.playerName) errors.push('playerName is required');
+            if (!rec.characterName) errors.push('characterName is required');
+            if (!rec.role || !allowedRoles.includes(rec.role)) errors.push('role must be one of the predefined options');
+            if (!rec.classSpec || !boonsByClass[rec.classSpec]) errors.push('classSpec is required and must be valid');
+            if (!rec.gear || !allowedGear.includes(rec.gear)) errors.push('gear must be one of the predefined options');
+            if (rec.tags && !Array.isArray(rec.tags)) errors.push('tags must be an array');
+            return { valid: errors.length === 0, errors };
+        }
+
+        function isDuplicateCharacter(rec, list) {
+            return list.some(c =>
+                c.playerName.toLowerCase() === rec.playerName.toLowerCase() &&
+                c.characterName.toLowerCase() === rec.characterName.toLowerCase()
+            );
+        }
+
         // Save squads to localStorage
         function saveSquads() {
             localStorage.setItem('gw2Squads', JSON.stringify(squadsData));
@@ -560,8 +677,20 @@
                 classSpec: document.getElementById('classSpec').value,
                 gear: document.getElementById('gear').value,
                 notes: document.getElementById('notes').value.trim(),
+                tags: (document.getElementById('tags').value || '').split(',').map(t => t.trim()).filter(Boolean),
                 addedDate: new Date().toLocaleDateString()
             };
+
+            const validation = validateCharacterRecord(character);
+            if (!validation.valid) {
+                alert('Cannot add character:\n- ' + validation.errors.join('\n- '));
+                return;
+            }
+
+            if (isDuplicateCharacter(character, rosterData)) {
+                const proceed = confirm('A character with the same player and name already exists. Add anyway?');
+                if (!proceed) return;
+            }
 
             rosterData.push(character);
             saveRoster();
@@ -578,7 +707,38 @@
             localStorage.setItem('gw2Roster', JSON.stringify(rosterData));
         }
 
-        // Render roster table
+        let editingId = null;
+        let sortState = { field: 'playerName', direction: 'asc' };
+        let filterState = { search: '', role: '', gear: '', tag: '' };
+
+        function applyFilters(list) {
+            return list.filter(item => {
+                const matchesSearch = filterState.search === '' || (
+                    item.playerName.toLowerCase().includes(filterState.search) ||
+                    item.characterName.toLowerCase().includes(filterState.search) ||
+                    (item.notes || '').toLowerCase().includes(filterState.search)
+                );
+                const matchesRole = filterState.role === '' || item.role === filterState.role;
+                const matchesGear = filterState.gear === '' || item.gear === filterState.gear;
+                const matchesTag = filterState.tag === '' || (item.tags || []).some(t => t.toLowerCase() === filterState.tag);
+                return matchesSearch && matchesRole && matchesGear && matchesTag;
+            });
+        }
+
+        function applySort(list) {
+            const sorted = [...list];
+            sorted.sort((a, b) => {
+                const field = sortState.field;
+                const dir = sortState.direction === 'asc' ? 1 : -1;
+                const va = (a[field] || '').toString().toLowerCase();
+                const vb = (b[field] || '').toString().toLowerCase();
+                if (va < vb) return -1 * dir;
+                if (va > vb) return 1 * dir;
+                return 0;
+            });
+            return sorted;
+        }
+
         function renderRoster() {
             const tbody = document.getElementById('rosterBody');
             
@@ -588,21 +748,127 @@
                 return;
             }
 
-            tbody.innerHTML = rosterData.map(char => `
-                <tr>
-                    <td><strong>${escapeHtml(char.playerName)}</strong></td>
-                    <td>${escapeHtml(char.characterName)}</td>
-                    <td><span class="badge">${capitalize(char.role)}</span></td>
-                    <td>${escapeHtml(char.classSpec)}</td>
-                    <td><span class="badge">${char.gear}</span></td>
-                    <td>${escapeHtml(char.notes || '-')}</td>
-                    <td>
-                        <button onclick="deleteCharacter(${char.id})" class="text-red-400 hover:text-red-300 text-sm font-semibold">Delete</button>
-                    </td>
-                </tr>
-            `).join('');
+            const filtered = applyFilters(rosterData);
+            const sorted = applySort(filtered);
+
+            if (sorted.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-500">No entries match the current filters.</td></tr>';
+                updateStats();
+                return;
+            }
+
+            tbody.innerHTML = sorted.map(char => {
+                const isEditing = editingId === char.id;
+                const tagHtml = (char.tags || []).map(t => `<span class="tag-pill">${escapeHtml(t)}</span>`).join('');
+                if (isEditing) {
+                    return `
+                        <tr>
+                            <td><input class="input-field w-full" id="editPlayerName" value="${escapeHtml(char.playerName)}"></td>
+                            <td><input class="input-field w-full" id="editCharacterName" value="${escapeHtml(char.characterName)}"></td>
+                            <td>
+                                <select id="editRole" class="input-field w-full">
+                                    <option value="ranged-healer">Ranged Healer</option>
+                                    <option value="melee-healer">Melee Healer</option>
+                                    <option value="cleanse-support">Cleanse Support</option>
+                                    <option value="boon-support">Boon Support</option>
+                                    <option value="frontline-dps">Frontline DPS</option>
+                                    <option value="ranged-dps">Ranged DPS</option>
+                                    <option value="backline-dps">Backline DPS</option>
+                                    <option value="utility">Utility</option>
+                                    <option value="flexible">Flexible</option>
+                                </select>
+                            </td>
+                            <td><input class="input-field w-full" id="editClassSpec" value="${escapeHtml(char.classSpec)}"></td>
+                            <td>
+                                <select id="editGear" class="input-field w-full">
+                                    <option value="legendary">Legendary</option>
+                                    <option value="ascended">Ascended</option>
+                                    <option value="exotic">Exotic</option>
+                                    <option value="rare">Rare</option>
+                                    <option value="mixed">Mixed / Leveling</option>
+                                </select>
+                            </td>
+                            <td>
+                                <textarea class="input-field w-full" id="editNotes" rows="2">${escapeHtml(char.notes || '')}</textarea>
+                                <input class="input-field w-full mt-2" id="editTags" value="${escapeHtml((char.tags || []).join(', '))}" placeholder="tags comma separated">
+                            </td>
+                            <td class="space-x-2">
+                                <button onclick="saveEdit(${char.id})" class="btn-primary text-sm" aria-label="Save edits">Save</button>
+                                <button onclick="cancelEdit()" class="btn-secondary text-sm" aria-label="Cancel edits">Cancel</button>
+                            </td>
+                        </tr>
+                    `;
+                }
+
+                return `
+                    <tr>
+                        <td><strong>${escapeHtml(char.playerName)}</strong></td>
+                        <td>${escapeHtml(char.characterName)}</td>
+                        <td><span class="badge">${capitalize(char.role)}</span></td>
+                        <td>${escapeHtml(char.classSpec)}</td>
+                        <td><span class="badge">${char.gear}</span></td>
+                        <td>
+                            ${escapeHtml(char.notes || '-')}
+                            <div>${tagHtml || ''}</div>
+                        </td>
+                        <td class="space-x-2">
+                            <button onclick="startEdit(${char.id})" class="btn-secondary text-sm" aria-label="Edit character">Edit</button>
+                            <button onclick="deleteCharacter(${char.id})" class="text-red-400 hover:text-red-300 text-sm font-semibold" aria-label="Delete character">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
 
             updateStats();
+        }
+
+        function startEdit(id) {
+            editingId = id;
+            renderRoster();
+            const char = rosterData.find(c => c.id === id);
+            if (char) {
+                document.getElementById('editRole').value = char.role;
+                document.getElementById('editGear').value = char.gear;
+            }
+        }
+
+        function cancelEdit() {
+            editingId = null;
+            renderRoster();
+        }
+
+        function saveEdit(id) {
+            const char = rosterData.find(c => c.id === id);
+            if (!char) return;
+            const updated = {
+                ...char,
+                playerName: document.getElementById('editPlayerName').value.trim(),
+                characterName: document.getElementById('editCharacterName').value.trim(),
+                role: document.getElementById('editRole').value,
+                classSpec: document.getElementById('editClassSpec').value.trim(),
+                gear: document.getElementById('editGear').value,
+                notes: document.getElementById('editNotes').value.trim(),
+                tags: (document.getElementById('editTags').value || '').split(',').map(t => t.trim()).filter(Boolean)
+            };
+
+            const validation = validateCharacterRecord(updated);
+            if (!validation.valid) {
+                alert('Cannot save changes:\n- ' + validation.errors.join('\n- '));
+                return;
+            }
+
+            // Check duplicates excluding self
+            const duplicate = rosterData.some(c => c.id !== id && c.playerName.toLowerCase() === updated.playerName.toLowerCase() && c.characterName.toLowerCase() === updated.characterName.toLowerCase());
+            if (duplicate) {
+                const proceed = confirm('Another entry with the same player and character exists. Save anyway?');
+                if (!proceed) return;
+            }
+
+            Object.assign(char, updated);
+            saveRoster();
+            editingId = null;
+            renderRoster();
+            updateTeamBoons();
         }
 
         // Delete character
@@ -719,6 +985,46 @@
             URL.revokeObjectURL(url);
         });
 
+        // Export filtered JSON
+        document.getElementById('exportFilteredJsonBtn').addEventListener('click', function() {
+            const filtered = applySort(applyFilters(rosterData));
+            const dataStr = JSON.stringify(filtered, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `team-roster-filtered-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // Export filtered CSV
+        document.getElementById('exportCsvBtn').addEventListener('click', function() {
+            const filtered = applySort(applyFilters(rosterData));
+            if (filtered.length === 0) {
+                alert('No data to export for current filters.');
+                return;
+            }
+            const header = ['playerName','characterName','role','classSpec','gear','notes','tags'];
+            const rows = filtered.map(c => [
+                c.playerName,
+                c.characterName,
+                c.role,
+                c.classSpec,
+                c.gear,
+                (c.notes || '').replace(/"/g,'""'),
+                (c.tags || []).join('|')
+            ]);
+            const csv = [header.join(',')].concat(rows.map(r => r.map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(','))).join('\n');
+            const blob = new Blob([csv], {type: 'text/csv'});
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `team-roster-filtered-${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            URL.revokeObjectURL(url);
+        });
+
         // Import roster
         document.getElementById('importBtn').addEventListener('click', function() {
             document.getElementById('importFile').click();
@@ -733,7 +1039,17 @@
                 try {
                     const imported = JSON.parse(event.target.result);
                     if (Array.isArray(imported)) {
-                        if (confirm(`Import ${imported.length} character(s)? This will add to existing roster.`)) {
+                        const invalids = imported.map(validateCharacterRecord).filter(v => !v.valid);
+                        if (invalids.length > 0) {
+                            alert('Import cancelled due to invalid records. Please verify schema.');
+                            return;
+                        }
+                        const duplicates = imported.filter(rec => isDuplicateCharacter(rec, rosterData));
+                        let proceed = true;
+                        if (duplicates.length > 0) {
+                            proceed = confirm(`Detected ${duplicates.length} duplicate(s) (player+character). Import anyway and keep duplicates?`);
+                        }
+                        if (proceed && confirm(`Import ${imported.length} character(s)? This will add to existing roster.`)) {
                             rosterData.push(...imported);
                             saveRoster();
                             renderRoster();
@@ -763,6 +1079,11 @@
                 try {
                     const imported = JSON.parse(event.target.result);
                     if (Array.isArray(imported) && imported.length > 0) {
+                        const invalids = imported.map(validateCharacterRecord).filter(v => !v.valid);
+                        if (invalids.length > 0) {
+                            alert('Import cancelled due to invalid records in squad.');
+                            return;
+                        }
                         const squadName = prompt('Enter a name for this squad:', `Squad ${squadsData.length + 1}`);
                         if (squadName) {
                             squadsData.push({
@@ -877,7 +1198,19 @@
             const squad = squadsData.find(s => s.id === squadId);
             if (!squad) return;
 
-            if (confirm(`Merge "${squad.name}" (${squad.members.length} members) into your roster?`)) {
+            const invalids = squad.members.map(validateCharacterRecord).filter(v => !v.valid);
+            if (invalids.length > 0) {
+                alert('Cannot merge: squad has invalid records.');
+                return;
+            }
+
+            const duplicates = squad.members.filter(rec => isDuplicateCharacter(rec, rosterData));
+            let proceed = true;
+            if (duplicates.length > 0) {
+                proceed = confirm(`Detected ${duplicates.length} duplicate(s). Merge and keep duplicates?`);
+            }
+
+            if (proceed && confirm(`Merge "${squad.name}" (${squad.members.length} members) into your roster?`)) {
                 rosterData.push(...squad.members);
                 saveRoster();
                 renderRoster();
@@ -912,6 +1245,37 @@
             div.textContent = text;
             return div.innerHTML;
         }
+
+        // Filters and sorting handlers
+        document.getElementById('applyFiltersBtn').addEventListener('click', () => {
+            filterState = {
+                search: (document.getElementById('filterSearch').value || '').toLowerCase(),
+                role: document.getElementById('filterRole').value,
+                gear: document.getElementById('filterGear').value,
+                tag: (document.getElementById('filterTag').value || '').toLowerCase()
+            };
+            renderRoster();
+        });
+
+        document.getElementById('clearFiltersBtn').addEventListener('click', () => {
+            document.getElementById('filterSearch').value = '';
+            document.getElementById('filterRole').value = '';
+            document.getElementById('filterGear').value = '';
+            document.getElementById('filterTag').value = '';
+            filterState = { search: '', role: '', gear: '', tag: '' };
+            renderRoster();
+        });
+
+        document.getElementById('sortField').addEventListener('change', (e) => {
+            sortState.field = e.target.value;
+            renderRoster();
+        });
+
+        document.getElementById('sortDirectionBtn').addEventListener('click', () => {
+            sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
+            document.getElementById('sortDirectionBtn').textContent = sortState.direction === 'asc' ? 'Asc' : 'Desc';
+            renderRoster();
+        });
 
         // Initial render
         populateBoonSelect();
