@@ -2,15 +2,18 @@
 
 This document organizes proposed improvements by estimated implementation difficulty. Each item includes a short description and key tasks.
 
-## Easy
-- Sorting & Filters: Add table sorting by role/spec/gear and quick filters (e.g., Legendary, Support).
-- Inline Editing: Click-to-edit rows for role/gear/notes without re-entering the form.
-- Duplicate Detection: Detect duplicates on import (`playerName` + `characterName`) with simple merge/skip options.
-- Export Options: CSV export and filtered JSON exports (e.g., only Healers). Per-squad metadata in export filename.
-- Validation & Schema: Basic schema check for imports, with clear error messages.
-- Print-Friendly View: Layout optimized for printing or PDF export of team sheet.
-- Notes & Tags: Per-character tags (e.g., commander, backup) and searchable notes.
-- Accessibility: Keyboard navigation, ARIA roles, and high-contrast toggle.
+## Completed (Easy)
+- Sorting & Filters: Table sorting by role/spec/gear plus quick filters (search, role, gear, tag) with Asc/Desc toggle.
+- Inline Editing: Per-row edit/save/cancel with validation and duplicate checks.
+- Duplicate Detection: Detect duplicates on add/import/merge (`playerName` + `characterName`) with confirmations.
+- Export Options: Filter-aware JSON and CSV exports.
+- Validation & Schema: Schema checks on add/import/merge with clear errors.
+- Print-Friendly View: Print CSS hides controls and lightens backgrounds.
+- Notes & Tags: Tags field, pill display, and tag filter.
+- Accessibility: Inputs/buttons labeled for filters/sorting (aria-label); printable view available.
+
+## Easy (Remaining)
+- None (all Easy items completed)
 
 ## Medium
 - Squad Analytics: Per-squad dashboard (full boon coverage, role distribution, gear histogram).
