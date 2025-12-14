@@ -17,6 +17,8 @@ GW2 Teams is a single-page web app to manage Guild Wars 2 World vs World (WvW) r
   - Displays official GW2 boon icons from the wiki.
 
 ## Usage
+Online demo: https://hypercube.com.mx/gw2_roster/
+
 1. Open `index.html` in your browser (or use VS Code Live Server).
 2. Fill the form to add characters to your roster.
 3. Use the top buttons to export/import roster JSON.
