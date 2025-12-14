@@ -14,3 +14,6 @@ cache/
 
 # Env
 .env
+
+# cPanel deployment config (local only)
+.cpanel.yml
