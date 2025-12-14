@@ -54,4 +54,8 @@ Roster and Squad JSON files are arrays of character objects:
 - Exported JSON contains the roster/squad members you added or imported; review before sharing.
 
 ## License
-Proprietary to the project owner. Do not redistribute without permission.
+This project is licensed under the GNU General Public License v3.0 (GPL-3.0).
+
+- Full text: see `LICENSE` in the repository or https://www.gnu.org/licenses/gpl-3.0.txt
+- You may copy, modify, and distribute under the terms of GPLv3.
+- This app includes links to external icons hosted on the GW2 Wiki; those assets are subject to their respective licenses and are not bundled in this repository.
