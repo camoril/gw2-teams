@@ -3,18 +3,18 @@
 GW2 Teams is a single-page web app to manage Guild Wars 2 World vs World (WvW) rosters and compare/import squads from other users. It runs locally in your browser (no backend) and uses Tailwind CSS via CDN.
 
 ## Features
-- **Roster management**: Add players/characters with role, class/spec, gear quality, and notes.
-- **Local storage**: All data persists in `localStorage` on your browser.
-- **JSON import/export**:
-  - Export your roster to a JSON file.
-  - Import a JSON file to merge into your roster.
-- **Squads**:
-  - Import external JSON rosters as separate, named squads.
-  - Manage squads in a modal: view members, export squad JSON, merge into your roster, or delete.
-- **Boon analysis**:
-  - Auto-aggregates boons provided by your roster.
-  - Shows coverage for key boons (Quickness, Alacrity, Might, Protection).
-  - Displays official GW2 boon icons from the wiki.
+- **Roster Management**: 
+  - Add players/characters with role, class/spec, gear quality, notes, and tags.
+  - **Subgroup Management**: Organize players into 15 subgroups.
+  - **Generic Characters**: Quickly add placeholder characters for theory-crafting based on class/spec.
+- **Advanced Analysis**:
+  - **Team Boons**: Auto-aggregates boons provided by the entire roster.
+  - **Subgroup Analysis**: Visual cards for each subgroup showing specific boon coverage (Quickness, Alacrity, etc.) to ensure balanced parties.
+  - **Role Presets**: Apply templates like "Zerg 30", "Minstrel Blob", or "Boon Ball" to set role targets and track composition progress.
+- **Data Management**:
+  - **Local Storage**: All data persists in your browser.
+  - **Import/Export**: Support for JSON (full/filtered) and CSV formats.
+  - **Squads**: Import external rosters as separate squads to compare or merge.
 
 ## Usage
 Online demo: https://hypercube.com.mx/gw2_roster/
@@ -34,8 +34,10 @@ Roster and Squad JSON files are arrays of character objects:
     "playerName": "Player",
     "characterName": "Character",
     "role": "Ranged Healer",
-    "classSpec": "Elementalist — Tempest",
+    "subgroup": "1",
+    "classSpec": "elementalist-tempest",
     "gear": "Legendary",
+    "tags": ["tag1", "tag2"],
     "notes": "Optional notes"
   }
 ]
