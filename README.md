@@ -10,6 +10,8 @@ GW2 Teams is a single-page web app to manage Guild Wars 2 World vs World (WvW) r
 - **Advanced Analysis**:
   - **Team Boons**: Auto-aggregates boons provided by the entire roster.
   - **Subgroup Analysis**: Visual cards for each subgroup showing specific boon coverage (Quickness, Alacrity, etc.) to ensure balanced parties.
+  - **Inspect Boons**: Check what boons a specific class/spec provides.
+  - **Find Classes by Boon**: Reverse lookup to find which classes provide a specific boon (e.g., "Who gives Stability?").
   - **Role Presets**: Apply templates like "Zerg 30", "Minstrel Blob", or "Boon Ball" to set role targets and track composition progress.
 - **Data Management**:
   - **Local Storage**: All data persists in your browser.

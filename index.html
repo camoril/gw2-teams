@@ -430,16 +430,30 @@
                         </div>
                     </div>
                     
-                    <!-- Individual Class Viewer -->
-                    <div class="mt-8 pt-6 border-t border-gray-700">
-                        <h3 class="text-lg font-bold text-gray-300 mb-4">🔍 Inspect Boons by Class</h3>
-                        <div class="mb-4 flex gap-2">
-                            <select id="boonClassSelect" class="input-field w-full">
-                                <option value="">-- Select Class/Spec to inspect --</option>
-                            </select>
-                            <button id="addGenericBtn" class="btn-primary whitespace-nowrap" style="display: none;">Add Generic</button>
+                    <!-- Individual Class Viewer & Boon Search -->
+                    <div class="mt-8 pt-6 border-t border-gray-700 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Inspect Boons by Class -->
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-300 mb-4">🔍 Inspect Boons by Class</h3>
+                            <div class="mb-4 flex gap-2">
+                                <select id="boonClassSelect" class="input-field w-full">
+                                    <option value="">-- Select Class/Spec to inspect --</option>
+                                </select>
+                                <button id="addGenericBtn" class="btn-primary whitespace-nowrap" style="display: none;">Add Generic</button>
+                            </div>
+                            <div id="boonDisplayArea" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
                         </div>
-                        <div id="boonDisplayArea" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
+
+                        <!-- Find Classes by Boon -->
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-300 mb-4">🔎 Find Classes by Boon</h3>
+                            <div class="mb-4">
+                                <select id="boonFilterSelect" class="input-field w-full">
+                                    <option value="">-- Select Boon to find Classes --</option>
+                                </select>
+                            </div>
+                            <div id="classesByBoonDisplay" class="space-y-2 max-h-60 overflow-y-auto pr-2"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -803,6 +817,62 @@
                 select.appendChild(optgroup);
             }
         }
+
+        // Populate boon filter select
+        function populateBoonFilterSelect() {
+            const select = document.getElementById('boonFilterSelect');
+            const boons = Object.keys(boonIcons).sort();
+            
+            select.innerHTML = '<option value="">-- Select Boon to find Classes --</option>' + 
+                boons.map(boon => `<option value="${boon}">${boon}</option>`).join('');
+        }
+
+        // Display classes for selected boon
+        document.getElementById('boonFilterSelect').addEventListener('change', function(e) {
+            const selectedBoon = this.value;
+            const displayArea = document.getElementById('classesByBoonDisplay');
+            
+            if (!selectedBoon) {
+                displayArea.innerHTML = '';
+                return;
+            }
+            
+            const matchingClasses = [];
+            for (const [classSpec, boons] of Object.entries(boonsByClass)) {
+                if (boons.includes(selectedBoon)) {
+                    matchingClasses.push(classSpec);
+                }
+            }
+            
+            if (matchingClasses.length === 0) {
+                displayArea.innerHTML = '<div class="text-gray-500 italic">No classes found providing this boon.</div>';
+                return;
+            }
+
+            // Group by base class for better display
+            const grouped = {};
+            matchingClasses.forEach(spec => {
+                const parts = spec.split('-');
+                const className = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+                const specName = parts[1] ? (parts[1].charAt(0).toUpperCase() + parts[1].slice(1)) : 'Base';
+                
+                if (!grouped[className]) grouped[className] = [];
+                grouped[className].push(specName);
+            });
+
+            let html = '';
+            for (const [className, specs] of Object.entries(grouped)) {
+                html += `
+                    <div class="bg-gray-800 p-3 rounded border border-gray-700">
+                        <div class="font-bold text-blue-400 mb-1">${className}</div>
+                        <div class="flex flex-wrap gap-2">
+                            ${specs.map(s => `<span class="tag-pill bg-gray-700 text-gray-300 border-gray-600">${s}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            displayArea.innerHTML = html;
+        });
 
         // Display boons for selected class
         document.getElementById('boonClassSelect').addEventListener('change', function(e) {
@@ -1716,6 +1786,7 @@
         // Initial render
         renderRoleTargetsUI();
         populateBoonSelect();
+        populateBoonFilterSelect();
         renderRoster();
         updateTeamBoons();
         updateSubgroupAnalysis();

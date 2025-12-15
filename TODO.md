@@ -5,6 +5,7 @@ This document organizes proposed improvements by estimated implementation diffic
 ## Completed
 - **Subgroup Management**: Organize roster into 15 subgroups with visual grid layout.
 - **Subgroup Analysis**: Real-time boon coverage visualization per subgroup (Quickness, Alacrity, etc.).
+- **Find Classes by Boon**: Reverse lookup tool to find providers for specific boons.
 - **Role Presets**: One-click application of standard compositions (Zerg 30, Minstrel Blob, etc.).
 - **Role Targets**: Configurable quotas per role with progress tracking.
 - **Generic Characters**: Quick creation of placeholder characters for theory-crafting.
