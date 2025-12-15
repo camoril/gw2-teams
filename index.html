@@ -208,6 +208,28 @@
                                 </select>
                             </div>
 
+                            <!-- Subgroup -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-semibold mb-2">Subgroup (1-15)</label>
+                                <select id="subgroup" class="input-field w-full">
+                                    <option value="1">Subgroup 1</option>
+                                    <option value="2">Subgroup 2</option>
+                                    <option value="3">Subgroup 3</option>
+                                    <option value="4">Subgroup 4</option>
+                                    <option value="5">Subgroup 5</option>
+                                    <option value="6">Subgroup 6</option>
+                                    <option value="7">Subgroup 7</option>
+                                    <option value="8">Subgroup 8</option>
+                                    <option value="9">Subgroup 9</option>
+                                    <option value="10">Subgroup 10</option>
+                                    <option value="11">Subgroup 11</option>
+                                    <option value="12">Subgroup 12</option>
+                                    <option value="13">Subgroup 13</option>
+                                    <option value="14">Subgroup 14</option>
+                                    <option value="15">Subgroup 15</option>
+                                </select>
+                            </div>
+
                             <!-- Class/Spec -->
                             <div class="mb-6">
                                 <label class="block text-sm font-semibold mb-2">Class / Specialization *</label>
@@ -399,10 +421,11 @@
                     <!-- Individual Class Viewer -->
                     <div class="mt-8 pt-6 border-t border-gray-700">
                         <h3 class="text-lg font-bold text-gray-300 mb-4">🔍 Inspect Boons by Class</h3>
-                        <div class="mb-4">
+                        <div class="mb-4 flex gap-2">
                             <select id="boonClassSelect" class="input-field w-full">
                                 <option value="">-- Select Class/Spec to inspect --</option>
                             </select>
+                            <button id="addGenericBtn" class="btn-primary whitespace-nowrap" style="display: none;">Add Generic</button>
                         </div>
                         <div id="boonDisplayArea" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
                     </div>
@@ -413,6 +436,14 @@
             <div class="mt-12">
                 <div class="form-card">
                     <h2 class="text-2xl font-bold mb-6 gw2-brand">Team Roster</h2>
+
+                    <!-- Subgroup Analysis -->
+                    <div id="subgroupAnalysis" class="mb-8">
+                        <h3 class="text-lg font-bold text-gray-300 mb-4">🛡️ Subgroup Composition & Boons</h3>
+                        <div id="subgroupGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            <!-- Subgroup cards will be injected here -->
+                        </div>
+                    </div>
 
                     <!-- Filters and Sorting -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -467,6 +498,7 @@
                         <table class="roster-table" id="rosterTable">
                             <thead>
                                 <tr>
+                                    <th>Sub</th>
                                     <th>Player</th>
                                     <th>Character</th>
                                     <th>Role</th>
@@ -478,7 +510,7 @@
                             </thead>
                             <tbody id="rosterBody">
                                 <tr>
-                                    <td colspan="7" class="text-center py-8 text-gray-500">
+                                    <td colspan="8" class="text-center py-8 text-gray-500">
                                         No characters registered yet. Add your first character above!
                                     </td>
                                 </tr>
@@ -715,12 +747,15 @@
         document.getElementById('boonClassSelect').addEventListener('change', function(e) {
             const classSpec = this.value;
             const displayArea = document.getElementById('boonDisplayArea');
+            const addBtn = document.getElementById('addGenericBtn');
             
             if (!classSpec || !boonsByClass[classSpec]) {
                 displayArea.innerHTML = '';
+                addBtn.style.display = 'none';
                 return;
             }
             
+            addBtn.style.display = 'block';
             const boons = boonsByClass[classSpec];
             displayArea.innerHTML = boons.map(boon => `
                 <div style="background: #4A5568; border-radius: 8px; padding: 10px; text-align: center; color: white; font-weight: bold; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 70px;">
@@ -728,6 +763,37 @@
                     <span style="font-size: 12px;">${boon}</span>
                 </div>
             `).join('');
+        });
+
+        // Add Generic Character
+        document.getElementById('addGenericBtn').addEventListener('click', function() {
+            const classSpec = document.getElementById('boonClassSelect').value;
+            if (!classSpec) return;
+
+            const parts = classSpec.split('-');
+            const className = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+            const specName = parts[1] ? (parts[1].charAt(0).toUpperCase() + parts[1].slice(1)) : 'Core';
+            const displayName = parts[1] ? `${specName}` : `${className}`;
+
+            const character = {
+                id: Date.now(),
+                playerName: 'Generic',
+                characterName: `${displayName} (Generic)`,
+                role: 'flexible',
+                subgroup: 1,
+                classSpec: classSpec,
+                gear: 'exotic',
+                notes: 'Auto-generated generic character',
+                tags: ['generic'],
+                addedDate: new Date().toLocaleDateString()
+            };
+
+            rosterData.push(character);
+            saveRoster();
+            renderRoster();
+            updateTeamBoons();
+            updateSubgroupAnalysis();
+            alert(`Added generic ${displayName} to roster.`);
         });
 
         // Form submission
@@ -739,6 +805,7 @@
                 playerName: document.getElementById('playerName').value.trim(),
                 characterName: document.getElementById('characterName').value.trim(),
                 role: document.getElementById('role').value,
+                subgroup: parseInt(document.getElementById('subgroup').value) || 1,
                 classSpec: document.getElementById('classSpec').value,
                 gear: document.getElementById('gear').value,
                 notes: document.getElementById('notes').value.trim(),
@@ -761,7 +828,9 @@
             saveRoster();
             renderRoster();
             updateTeamBoons();
+            updateSubgroupAnalysis();
             this.reset();
+            document.getElementById('subgroup').value = "1"; // Reset to default
             
             // Show success message
             alert(`${character.characterName} has been added to the roster!`);
@@ -773,7 +842,7 @@
         }
 
         let editingId = null;
-        let sortState = { field: 'playerName', direction: 'asc' };
+        let sortState = { field: 'subgroup', direction: 'asc' };
         let filterState = { search: '', role: '', gear: '', tag: '' };
 
         function applyFilters(list) {
@@ -795,6 +864,12 @@
             sorted.sort((a, b) => {
                 const field = sortState.field;
                 const dir = sortState.direction === 'asc' ? 1 : -1;
+                
+                // Numeric sort for subgroup
+                if (field === 'subgroup') {
+                    return ((a.subgroup || 1) - (b.subgroup || 1)) * dir;
+                }
+
                 const va = (a[field] || '').toString().toLowerCase();
                 const vb = (b[field] || '').toString().toLowerCase();
                 if (va < vb) return -1 * dir;
@@ -849,8 +924,9 @@
             const tbody = document.getElementById('rosterBody');
             
             if (rosterData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-500">No characters registered yet. Add your first character above!</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-gray-500">No characters registered yet. Add your first character above!</td></tr>';
                 updateStats();
+                updateSubgroupAnalysis();
                 return;
             }
 
@@ -858,8 +934,9 @@
             const sorted = applySort(filtered);
 
             if (sorted.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-500">No entries match the current filters.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-gray-500">No entries match the current filters.</td></tr>';
                 updateStats();
+                updateSubgroupAnalysis();
                 return;
             }
 
@@ -869,6 +946,13 @@
                 if (isEditing) {
                     return `
                         <tr>
+                            <td>
+                                <select id="editSubgroup" class="input-field w-full" style="min-width: 60px;">
+                                    ${Array.from({length: 15}, (_, i) => i + 1).map(n => 
+                                        `<option value="${n}" ${char.subgroup === n ? 'selected' : ''}>${n}</option>`
+                                    ).join('')}
+                                </select>
+                            </td>
                             <td><input class="input-field w-full" id="editPlayerName" value="${escapeHtml(char.playerName)}"></td>
                             <td><input class="input-field w-full" id="editCharacterName" value="${escapeHtml(char.characterName)}"></td>
                             <td>
@@ -908,6 +992,7 @@
 
                 return `
                     <tr>
+                        <td class="text-center font-bold text-gray-400">${char.subgroup || 1}</td>
                         <td><strong>${escapeHtml(char.playerName)}</strong></td>
                         <td>${escapeHtml(char.characterName)}</td>
                         <td><span class="badge">${capitalize(char.role)}</span></td>
@@ -926,6 +1011,7 @@
             }).join('');
 
             updateStats();
+            updateSubgroupAnalysis();
         }
 
         function startEdit(id) {
@@ -935,6 +1021,7 @@
             if (char) {
                 document.getElementById('editRole').value = char.role;
                 document.getElementById('editGear').value = char.gear;
+                document.getElementById('editSubgroup').value = char.subgroup || 1;
             }
         }
 
@@ -951,6 +1038,7 @@
                 playerName: document.getElementById('editPlayerName').value.trim(),
                 characterName: document.getElementById('editCharacterName').value.trim(),
                 role: document.getElementById('editRole').value,
+                subgroup: parseInt(document.getElementById('editSubgroup').value) || 1,
                 classSpec: document.getElementById('editClassSpec').value.trim(),
                 gear: document.getElementById('editGear').value,
                 notes: document.getElementById('editNotes').value.trim(),
@@ -975,6 +1063,7 @@
             editingId = null;
             renderRoster();
             updateTeamBoons();
+            updateSubgroupAnalysis();
         }
 
         // Delete character
@@ -986,6 +1075,7 @@
                     saveRoster();
                     renderRoster();
                     updateTeamBoons();
+                    updateSubgroupAnalysis();
                 }
             }
         }
@@ -1064,6 +1154,76 @@
             }).join('');
 
             boonCoverageDisplay.innerHTML = coverageHtml;
+        }
+
+        // Subgroup Analysis
+        function updateSubgroupAnalysis() {
+            const container = document.getElementById('subgroupGrid');
+            if (!container) return;
+
+            // Group by subgroup
+            const groups = {};
+            for (let i = 1; i <= 15; i++) groups[i] = [];
+            
+            rosterData.forEach(c => {
+                const sub = c.subgroup || 1;
+                if (groups[sub]) groups[sub].push(c);
+            });
+
+            // Filter out empty groups unless they are between active groups (optional, but let's show active ones)
+            // Actually, let's just show groups that have members, or maybe 1-5 by default?
+            // Let's show only groups with members for now to save space
+            const activeGroups = Object.entries(groups).filter(([k, v]) => v.length > 0);
+            
+            if (activeGroups.length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center text-gray-500">No subgroups active.</div>';
+                return;
+            }
+
+            container.innerHTML = activeGroups.map(([subNum, members]) => {
+                const { counts: boons } = calculateBoons(members);
+                const memberCount = members.length;
+                const isFull = memberCount >= 5;
+                const isOver = memberCount > 5;
+                
+                // Critical boons for subgroup
+                const critical = ["Quickness", "Alacrity", "Might", "Protection", "Stability", "Aegis", "Regeneration", "Fury"];
+                
+                const boonStatus = critical.map(b => {
+                    const hasBoon = boons[b] > 0;
+                    const color = hasBoon ? '#00FF88' : '#444';
+                    const opacity = hasBoon ? '1' : '0.3';
+                    return `
+                        <div title="${b}" style="opacity: ${opacity}; filter: grayscale(${hasBoon ? 0 : 1});">
+                            <img src="${boonIcons[b]}" style="width: 20px; height: 20px;">
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div style="background: rgba(30, 30, 30, 0.9); border: 1px solid ${isOver ? '#ff4444' : '#444'}; border-radius: 8px; padding: 12px;">
+                        <div class="flex justify-between items-center mb-3 border-b border-gray-700 pb-2">
+                            <h4 class="font-bold text-lg text-gray-200">Subgroup ${subNum}</h4>
+                            <span class="text-xs font-bold px-2 py-1 rounded ${isOver ? 'bg-red-900 text-red-200' : (isFull ? 'bg-green-900 text-green-200' : 'bg-gray-700 text-gray-300')}">
+                                ${memberCount}/5
+                            </span>
+                        </div>
+                        
+                        <div class="flex gap-1 mb-4 justify-center bg-black/20 p-2 rounded">
+                            ${boonStatus}
+                        </div>
+
+                        <div class="space-y-1 text-sm">
+                            ${members.map(m => `
+                                <div class="flex justify-between items-center text-gray-400">
+                                    <span class="truncate w-24" title="${m.characterName}">${m.characterName}</span>
+                                    <span class="text-xs text-gray-500 truncate w-20 text-right">${m.classSpec.split('-')[1] || m.classSpec}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         // Export roster
@@ -1485,6 +1645,7 @@
         populateBoonSelect();
         renderRoster();
         updateTeamBoons();
+        updateSubgroupAnalysis();
     </script>
 </body>
 </html>
