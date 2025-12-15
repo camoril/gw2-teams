@@ -643,25 +643,10 @@
             "Vigor": "https://wiki.guildwars2.com/images/f/f4/Vigor.png",
             "Regeneration": "https://wiki.guildwars2.com/images/5/53/Regeneration.png",
             "Resolution": "https://wiki.guildwars2.com/images/0/06/Resolution.png",
-            "Resistance": "https://wiki.guildwars2.com/images/3/3a/Resistance.png",
+            "Resistance": "https://wiki.guildwars2.com/images/4/4b/Resistance.png",
             "Swiftness": "https://wiki.guildwars2.com/images/a/af/Swiftness.png"
         };
 
-        // Boon colors for visualization
-        const boonColors = {
-            "Might": "#FF6B6B",      // Red
-            "Fury": "#FFD700",       // Gold
-            "Quickness": "#00D4FF",  // Cyan
-            "Alacrity": "#00FF88",   // Green
-            "Protection": "#4169E1", // Royal Blue
-            "Aegis": "#9370DB",      // Purple
-            "Stability": "#FF8C00",  // Dark Orange
-            "Vigor": "#FF1493",      // Deep Pink
-            "Regeneration": "#32CD32", // Lime Green
-            "Resolution": "#87CEEB", // Sky Blue
-            "Resistance": "#FFB6C1", // Light Pink
-            "Swiftness": "#FF4500"   // Orange Red
-        };
 
         // Data management
         const rosterData = JSON.parse(localStorage.getItem('gw2Roster')) || [];
@@ -738,7 +723,7 @@
             
             const boons = boonsByClass[classSpec];
             displayArea.innerHTML = boons.map(boon => `
-                <div style="background: ${boonColors[boon] || '#666'}; border-radius: 8px; padding: 10px; text-align: center; color: white; font-weight: bold; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 70px;">
+                <div style="background: #4A5568; border-radius: 8px; padding: 10px; text-align: center; color: white; font-weight: bold; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 70px;">
                     <img src="${boonIcons[boon] || ''}" alt="${boon}" style="width: 32px; height: 32px; filter: drop-shadow(0 0 2px rgba(0,0,0,0.8));">
                     <span style="font-size: 12px;">${boon}</span>
                 </div>
@@ -1040,22 +1025,7 @@
             emptyMessage.style.display = 'none';
 
             // Collect all boons from roster characters
-            const allBoons = {};
-            const boonProvidedBy = {};
-
-            rosterData.forEach(character => {
-                const classSpec = character.classSpec;
-                if (boonsByClass[classSpec]) {
-                    boonsByClass[classSpec].forEach(boon => {
-                        if (!allBoons[boon]) {
-                            allBoons[boon] = 0;
-                            boonProvidedBy[boon] = [];
-                        }
-                        allBoons[boon]++;
-                        boonProvidedBy[boon].push(character.characterName);
-                    });
-                }
-            });
+            const { counts: allBoons, providers: boonProvidedBy } = calculateBoons(rosterData);
 
             // Sort boons by frequency
             const sortedBoons = Object.entries(allBoons).sort((a, b) => b[1] - a[1]);
@@ -1065,7 +1035,7 @@
                 teamBoonDisplay.innerHTML = '<div class="col-span-full text-center text-gray-500">No boons in roster</div>';
             } else {
                 teamBoonDisplay.innerHTML = sortedBoons.map(([boon, count]) => `
-                    <div style="background: ${boonColors[boon] || '#666'}; border-radius: 8px; padding: 10px; text-align: center; color: white; font-weight: bold; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); position: relative; cursor: help; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;" title="${boonProvidedBy[boon].join(', ')}">
+                    <div style="background: #4A5568; border-radius: 8px; padding: 10px; text-align: center; color: white; font-weight: bold; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); position: relative; cursor: help; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;" title="${boonProvidedBy[boon].join(', ')}">
                         <img src="${boonIcons[boon] || ''}" alt="${boon}" style="width: 28px; height: 28px; filter: drop-shadow(0 0 2px rgba(0,0,0,0.8));">
                         <div style="font-size: 10px; opacity: 0.9;">×${count}</div>
                     </div>
@@ -1098,27 +1068,13 @@
 
         // Export roster
         document.getElementById('exportBtn').addEventListener('click', function() {
-            const dataStr = JSON.stringify(rosterData, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `team-roster-${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            URL.revokeObjectURL(url);
+            downloadJson(rosterData, `team-roster-${new Date().toISOString().split('T')[0]}.json`);
         });
 
         // Export filtered JSON
         document.getElementById('exportFilteredJsonBtn').addEventListener('click', function() {
             const filtered = applySort(applyFilters(rosterData));
-            const dataStr = JSON.stringify(filtered, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `team-roster-filtered-${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            URL.revokeObjectURL(url);
+            downloadJson(filtered, `team-roster-filtered-${new Date().toISOString().split('T')[0]}.json`);
         });
 
         // Export filtered CSV
@@ -1251,16 +1207,7 @@
             }
 
             container.innerHTML = squadsData.map(squad => {
-                const allBoons = {};
-                squad.members.forEach(member => {
-                    const classSpec = member.classSpec;
-                    if (boonsByClass[classSpec]) {
-                        boonsByClass[classSpec].forEach(boon => {
-                            allBoons[boon] = (allBoons[boon] || 0) + 1;
-                        });
-                    }
-                });
-
+                const { counts: allBoons } = calculateBoons(squad.members);
                 const sortedBoons = Object.entries(allBoons).sort((a, b) => b[1] - a[1]).slice(0, 6);
 
                 return `
@@ -1300,7 +1247,6 @@
             const roleCounts = {};
             const gearCounts = {};
             const tagCounts = {};
-            const boonCounts = {};
 
             squad.members.forEach(member => {
                 roleCounts[member.role] = (roleCounts[member.role] || 0) + 1;
@@ -1309,12 +1255,9 @@
                     const key = t.toLowerCase();
                     tagCounts[key] = (tagCounts[key] || 0) + 1;
                 });
-                if (boonsByClass[member.classSpec]) {
-                    boonsByClass[member.classSpec].forEach(b => {
-                        boonCounts[b] = (boonCounts[b] || 0) + 1;
-                    });
-                }
             });
+
+            const { counts: boonCounts } = calculateBoons(squad.members);
 
             const roleHtml = Object.entries(roleCounts).map(([r,c]) => `<span class="tag-pill">${escapeHtml(roleLabels[r] || r)}: ${c}</span>`).join(' ');
             const gearHtml = Object.entries(gearCounts).map(([g,c]) => `<span class="tag-pill">${escapeHtml(g)}: ${c}</span>`).join(' ');
@@ -1355,15 +1298,8 @@
             const squad = squadsData.find(s => s.id === squadId);
             if (!squad) return;
 
-            const dataStr = JSON.stringify(squad.members, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
             const fileName = squad.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-            link.href = url;
-            link.download = `${fileName}_squad_${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            URL.revokeObjectURL(url);
+            downloadJson(squad.members, `${fileName}_squad_${new Date().toISOString().split('T')[0]}.json`);
         }
 
         // Merge Squad to Roster
@@ -1433,6 +1369,37 @@
         }
 
         // Utility functions
+        function calculateBoons(members) {
+            const counts = {};
+            const providers = {};
+            
+            members.forEach(member => {
+                const classSpec = member.classSpec;
+                if (boonsByClass[classSpec]) {
+                    boonsByClass[classSpec].forEach(boon => {
+                        if (!counts[boon]) {
+                            counts[boon] = 0;
+                            providers[boon] = [];
+                        }
+                        counts[boon]++;
+                        providers[boon].push(member.characterName);
+                    });
+                }
+            });
+            return { counts, providers };
+        }
+
+        function downloadJson(data, filename) {
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
         function capitalize(str) {
             return str.charAt(0).toUpperCase() + str.slice(1);
         }
