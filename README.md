@@ -14,6 +14,7 @@ GW2 Teams is a single-page web app to manage Guild Wars 2 World vs World (WvW) r
 - **Data Management**:
   - **Local Storage**: All data persists in your browser.
   - **Import/Export**: Support for JSON (full/filtered) and CSV formats.
+  - **Reset Roster**: One-click option to clear all data and start fresh.
   - **Squads**: Import external rosters as separate squads to compare or merge.
 
 ## Usage

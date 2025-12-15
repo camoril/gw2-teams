@@ -15,6 +15,7 @@ This document organizes proposed improvements by estimated implementation diffic
 - **Validation & Schema**: Schema checks on add/import/merge.
 - **Print-Friendly View**: Print CSS hides controls and lightens backgrounds.
 - **Notes & Tags**: Tags field, pill display, and tag filter.
+- **Reset Roster**: Button to clear all roster data with confirmation.
 
 ## Medium
 - **Squad Analytics**: Per-squad dashboard (full boon coverage, role distribution, gear histogram).

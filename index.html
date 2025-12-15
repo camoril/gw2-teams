@@ -78,6 +78,18 @@
         .btn-secondary:hover {
             background: rgba(120, 120, 120, 0.9);
         }
+        .btn-danger {
+            background: rgba(220, 53, 69, 0.8);
+            color: #fff;
+            padding: 10px 16px;
+            border: 1px solid #dc3545;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-danger:hover {
+            background: rgba(200, 35, 51, 0.9);
+        }
         .character-entry {
             background: rgba(35, 35, 35, 0.8);
             border-left: 4px solid #00d4ff;
@@ -526,6 +538,7 @@
                     <button id="exportBtn" class="btn-primary">Export Roster (JSON)</button>
                     <button id="importBtn" class="btn-secondary ml-4">Import to Roster</button>
                     <input type="file" id="importFile" accept=".json" style="display:none;">
+                    <button id="clearRosterBtn" class="btn-danger ml-4">Reset Roster</button>
                 </div>
                 <div>
                     <button id="importSquadBtn" class="btn-secondary">Import as Squad</button>
@@ -1315,6 +1328,18 @@
         // Import roster
         document.getElementById('importBtn').addEventListener('click', function() {
             document.getElementById('importFile').click();
+        });
+
+        // Clear Roster
+        document.getElementById('clearRosterBtn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to clear the ENTIRE roster? This action cannot be undone.')) {
+                rosterData.length = 0; // Clear array
+                saveRoster();
+                renderRoster();
+                updateTeamBoons();
+                updateSubgroupAnalysis();
+                alert('Roster has been reset.');
+            }
         });
 
         document.getElementById('importFile').addEventListener('change', function(e) {
