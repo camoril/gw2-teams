@@ -2,28 +2,27 @@
 
 This document organizes proposed improvements by estimated implementation difficulty. Each item includes a short description and key tasks.
 
-## Completed (Easy)
-- Sorting & Filters: Table sorting by role/spec/gear plus quick filters (search, role, gear, tag) with Asc/Desc toggle.
-- Inline Editing: Per-row edit/save/cancel with validation and duplicate checks.
-- Duplicate Detection: Detect duplicates on add/import/merge (`playerName` + `characterName`) with confirmations.
-- Export Options: Filter-aware JSON and CSV exports.
-- Validation & Schema: Schema checks on add/import/merge with clear errors.
-- Print-Friendly View: Print CSS hides controls and lightens backgrounds.
-- Notes & Tags: Tags field, pill display, and tag filter.
-- Accessibility: Inputs/buttons labeled for filters/sorting (aria-label); printable view available.
-
-## Easy (Remaining)
-- None (all Easy items completed)
+## Completed
+- **Subgroup Management**: Organize roster into 15 subgroups with visual grid layout.
+- **Subgroup Analysis**: Real-time boon coverage visualization per subgroup (Quickness, Alacrity, etc.).
+- **Role Presets**: One-click application of standard compositions (Zerg 30, Minstrel Blob, etc.).
+- **Role Targets**: Configurable quotas per role with progress tracking.
+- **Generic Characters**: Quick creation of placeholder characters for theory-crafting.
+- **Sorting & Filters**: Table sorting by role/spec/gear plus quick filters (search, role, gear, tag).
+- **Inline Editing**: Per-row edit/save/cancel with validation.
+- **Duplicate Detection**: Detect duplicates on add/import/merge.
+- **Export Options**: Filter-aware JSON and CSV exports.
+- **Validation & Schema**: Schema checks on add/import/merge.
+- **Print-Friendly View**: Print CSS hides controls and lightens backgrounds.
+- **Notes & Tags**: Tags field, pill display, and tag filter.
 
 ## Medium
-- Squad Analytics: Per-squad dashboard (full boon coverage, role distribution, gear histogram).
-- Merge Strategy: Smart merge with conflict resolution (keep newest, keep local, prompt per entry).
-- Role Targets: Configurable role quotas with live completeness indicators and warnings.
-- Boon Weights: Priority scoring per WvW meta; compute team score and highlight missing high-weight boons.
-- Presets & Templates: Saved roster presets (e.g., Zerg 30, Strike 10) to scaffold compositions.
-- URL Sharing: Encode roster/squad selection in URL for shareable state (guard length, optional short link).
-- i18n: Language toggle (ES/EN) for roles, boons, and UI labels.
-- Backup/Restore: Export/import full app state (roster + squads) and periodic auto-backup.
+- **Squad Analytics**: Per-squad dashboard (full boon coverage, role distribution, gear histogram).
+- **Merge Strategy**: Smart merge with conflict resolution (keep newest, keep local, prompt per entry).
+- **Boon Weights**: Priority scoring per WvW meta; compute team score and highlight missing high-weight boons.
+- **URL Sharing**: Encode roster/squad selection in URL for shareable state.
+- **i18n**: Language toggle (ES/EN) for roles, boons, and UI labels.
+- **Backup/Restore**: Export/import full app state (roster + squads) and periodic auto-backup.
 
 ## Hard
 - Squad Comparison: Side-by-side comparison between two squads and the roster with diffs, heatmaps.
