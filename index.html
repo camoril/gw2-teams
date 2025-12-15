@@ -749,54 +749,126 @@
             "necromancer-ritualist": ["Might", "Regeneration", "Stability", "Alacrity", "Resistance"]
         };
 
-        // Recommended Builds Database
+        // Recommended Builds Database (Sourced from Metabattle WvW Zerg/Roaming)
         const recommendedBuilds = {
+            // GUARDIAN
             "guardian-firebrand": [
-                { name: "Heal Firebrand (Minstrel)", url: "https://gw2skills.net/editor/?PWwAEt3lVwQYIsJmJWyXqPVA-D2IY1on/MyUClpCo3B-w" },
-                { name: "Cele Firebrand (Roaming)", url: "https://gw2skills.net/editor/" }
+                { name: "[Zerg] Support Firebrand (Meta)", url: "https://metabattle.com/wiki/Build:Firebrand_-_Support_Firebrand" },
+                { name: "[Zerg] Valor Firebrand (Meta)", url: "https://metabattle.com/wiki/Build:Firebrand_-_Valor_Firebrand" }
+            ],
+            "guardian-dragonhunter": [
+                { name: "[Roaming] Radiant Trapper", url: "https://metabattle.com/wiki/Build:Dragonhunter_-_Radiant_Trapper_Roamer" }
             ],
             "guardian-willbender": [
-                { name: "Power Willbender (Roaming)", url: "https://gw2skills.net/editor/" }
+                { name: "[Roaming] Radiant Spearbender", url: "https://metabattle.com/wiki/Build:Willbender_-_Radiant_Spearbender_Roamer" },
+                { name: "[Roaming] Radiant Swordbender", url: "https://metabattle.com/wiki/Build:Willbender_-_Radiant_Swordbender_Roamer" }
             ],
-            "revenant-herald": [
-                { name: "Power Herald (Zerg)", url: "https://gw2skills.net/editor/" }
+            "guardian": [
+                { name: "[Roaming] Radiant Greatsword", url: "https://metabattle.com/wiki/Build:Guardian_-_Radiant_Greatsword_Roamer" }
             ],
-            "revenant-vindicator": [
-                { name: "Power Vindicator (Zerg)", url: "https://gw2skills.net/editor/" }
-            ],
+
+            // WARRIOR
             "warrior-spellbreaker": [
-                { name: "Support Spellbreaker (Zerg)", url: "https://gw2skills.net/editor/" }
+                { name: "[Roaming] Spearbreaker", url: "https://metabattle.com/wiki/Build:Spellbreaker_-_Spearbreaker_Roamer" },
+                { name: "[Roaming] Staffbreaker", url: "https://metabattle.com/wiki/Build:Spellbreaker_-_Staffbreaker_Roamer" }
             ],
             "warrior-berserker": [
-                { name: "Power Berserker (Zerg)", url: "https://gw2skills.net/editor/" }
+                { name: "[Roaming] Defensive Condizerker", url: "https://metabattle.com/wiki/Build:Berserker_-_Defensive_Condizerker_Roamer" }
             ],
+            "warrior-bladesworn": [
+                { name: "[Roaming] Defense Bladesworn", url: "https://metabattle.com/wiki/Build:Bladesworn_-_Defense_Bladesworn_Roamer" }
+            ],
+
+            // REVENANT
+            "revenant-herald": [
+                { name: "[Roaming] Celestial Herald", url: "https://metabattle.com/wiki/Build:Herald_-_Celestial_Herald_Roamer" },
+                { name: "[Roaming] Shiro Roamer", url: "https://metabattle.com/wiki/Build:Herald_-_Shiro_Roamer" }
+            ],
+            "revenant-vindicator": [
+                { name: "[Roaming] Defensive Power Vindi", url: "https://metabattle.com/wiki/Build:Vindicator_-_Defensive_Power_Vindi_Roamer" },
+                { name: "[Roaming] Retribution Greatsword", url: "https://metabattle.com/wiki/Build:Vindicator_-_Retribution_Greatsword_Roamer" }
+            ],
+            "revenant-renegade": [
+                { name: "[Roaming] Celestial Renegade", url: "https://metabattle.com/wiki/Build:Renegade_-_Celestial_Renegade_Roamer" }
+            ],
+
+            // RANGER
             "ranger-druid": [
-                { name: "Support Druid (Immob)", url: "https://gw2skills.net/editor/" }
+                { name: "[Zerg] Support Druid (Meta)", url: "https://metabattle.com/wiki/Build:Druid_-_Support_Druid" },
+                { name: "[Roaming] Celestial Eclipse", url: "https://metabattle.com/wiki/Build:Druid_-_Celestial_Eclipse_Roamer" }
             ],
+            "ranger-soulbeast": [
+                { name: "[Roaming] Poisonbeast", url: "https://metabattle.com/wiki/Build:Soulbeast_-_Poisonbeast_Roamer" }
+            ],
+            "ranger-untamed": [
+                { name: "[Roaming] Power Longbow", url: "https://metabattle.com/wiki/Build:Untamed_-_Power_Longbow_Roamer" }
+            ],
+
+            // ENGINEER
             "engineer-scrapper": [
-                { name: "Heal Scrapper (Zerg)", url: "https://gw2skills.net/editor/" }
+                { name: "[Zerg] Power Explosives (Meta)", url: "https://metabattle.com/wiki/Build:Scrapper_-_Power_Explosives" },
+                { name: "[Roaming] Explosive Hammer", url: "https://metabattle.com/wiki/Build:Scrapper_-_Explosive_Hammer_Roamer" },
+                { name: "[Roaming] Superspeed Grenadier", url: "https://metabattle.com/wiki/Build:Scrapper_-_Superspeed_Grenadier_Roamer" }
             ],
+            "engineer-holosmith": [
+                { name: "[Roaming] Celestial Elixir Holo", url: "https://metabattle.com/wiki/Build:Holosmith_-_Celestial_Elixir_Holo_Roamer" },
+                { name: "[Roaming] Tools Holo", url: "https://metabattle.com/wiki/Build:Holosmith_-_Tools_Holo_Roamer" }
+            ],
+            "engineer-mechanist": [
+                { name: "[Roaming] Condition Mecha", url: "https://metabattle.com/wiki/Build:Mechanist_-_Condition_Mecha_Roamer" },
+                { name: "[Roaming] Rifle Mecha", url: "https://metabattle.com/wiki/Build:Mechanist_-_Rifle_Mecha_Roamer" }
+            ],
+
+            // THIEF
             "thief-daredevil": [
-                { name: "Power Daredevil (Staff)", url: "https://gw2skills.net/editor/" }
+                { name: "[Roaming] Celestial SA A/P", url: "https://metabattle.com/wiki/Build:Daredevil_-_Celestial_SA_A/P_Roamer" },
+                { name: "[Roaming] Power S/D", url: "https://metabattle.com/wiki/Build:Daredevil_-_Power_S/D_Roamer" }
             ],
-            "elementalist-tempest": [
-                { name: "Heal Tempest (Auramancer)", url: "https://gw2skills.net/editor/" }
+            "thief-deadeye": [
+                { name: "[Roaming] SA Rifle", url: "https://metabattle.com/wiki/Build:Deadeye_-_SA_Rifle_Roamer" }
+            ],
+            "thief-specter": [
+                { name: "[Roaming] Celestial Scepter", url: "https://metabattle.com/wiki/Build:Specter_-_Celestial_Scepter_Roamer" }
+            ],
+
+            // ELEMENTALIST
+            "elementalist-catalyst": [
+                { name: "[Roaming] Celestial D/D", url: "https://metabattle.com/wiki/Build:Catalyst_-_Celestial_D/D_Roamer" },
+                { name: "[Roaming] Fresh Air Cata", url: "https://metabattle.com/wiki/Build:Catalyst_-_Fresh_Air_Cata_Roamer" }
             ],
             "elementalist-weaver": [
-                { name: "Power Weaver (Roaming)", url: "https://gw2skills.net/editor/" }
+                { name: "[Roaming] Starfire Roamer", url: "https://metabattle.com/wiki/Build:Weaver_-_Starfire_Roamer" }
             ],
-            "mesmer-chronomancer": [
-                { name: "Support Chrono (Grav Well)", url: "https://gw2skills.net/editor/" }
+            "elementalist-tempest": [
+                { name: "[Roaming] Condition Auroamancer", url: "https://metabattle.com/wiki/Build:Tempest_-_Condition_Auroamancer" }
+            ],
+
+            // MESMER
+            "mesmer-mirage": [
+                { name: "[Roaming] Celestial Daze Spammer", url: "https://metabattle.com/wiki/Build:Mirage_-_Celestial_Daze_Spammer_Roamer" },
+                { name: "[Roaming] Shatter Mirage", url: "https://metabattle.com/wiki/Build:Mirage_-_Shatter_Mirage" }
             ],
             "mesmer-virtuoso": [
-                { name: "Power Virtuoso (Spike)", url: "https://gw2skills.net/editor/" }
+                { name: "[Roaming] Power Speartuoso", url: "https://metabattle.com/wiki/Build:Virtuoso_-_Power_Speartuoso_Roamer" }
             ],
+            "mesmer-chronomancer": [
+                { name: "[Roaming] Power Shatter Chrono", url: "https://metabattle.com/wiki/Build:Chronomancer_-_Power_Shatter_Chrono_Roamer" }
+            ],
+
+            // NECROMANCER
             "necromancer-scourge": [
-                { name: "Power Scourge (Zerg)", url: "https://gw2skills.net/editor/" },
-                { name: "Cele Scourge (Roaming)", url: "https://gw2skills.net/editor/" }
+                { name: "[Zerg] Power Scourge (Meta)", url: "https://metabattle.com/wiki/Build:Scourge_-_Power_Scourge" }
             ],
             "necromancer-reaper": [
-                { name: "Power Reaper (Chill)", url: "https://gw2skills.net/editor/" }
+                { name: "[Roaming] Celestial Reaper", url: "https://metabattle.com/wiki/Build:Reaper_-_Celestial_Reaper_Roamer" },
+                { name: "[Roaming] Power Curses", url: "https://metabattle.com/wiki/Build:Reaper_-_Power_Curses_Roamer" }
+            ],
+            "necromancer-harbinger": [
+                { name: "[Roaming] Celestial Elixir", url: "https://metabattle.com/wiki/Build:Harbinger_-_Celestial_Elixir_Roamer" },
+                { name: "[Roaming] Spear Vampbringer", url: "https://metabattle.com/wiki/Build:Harbinger_-_Spear_Vampbringer_Roamer" }
+            ],
+            "necromancer": [
+                { name: "[Roaming] Core Condi", url: "https://metabattle.com/wiki/Build:Necromancer_-_Core_Condi_Roamer" }
             ]
         };
 
