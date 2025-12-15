@@ -354,6 +354,14 @@
                                 <p class="text-xl font-bold gw2-brand" id="commonClass">-</p>
                             </div>
                         </div>
+
+                        <div class="mt-6 pt-4 border-t border-gray-700">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-lg font-bold text-gray-200">Role Targets</h3>
+                                <button id="saveRoleTargetsBtn" class="btn-secondary text-sm">Save Targets</button>
+                            </div>
+                            <div id="roleTargetsContainer" class="space-y-2 text-sm text-gray-200"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -495,6 +503,10 @@
                         <button id="closeSquadsModal" style="background: #666; color: white; padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer;">Close</button>
                     </div>
                     <div id="squadsListContainer"></div>
+                    <div id="squadAnalyticsPanel" class="mt-6" style="background: rgba(0,0,0,0.25); border: 1px solid #444; border-radius: 8px; padding: 16px; display: none;">
+                        <h3 class="text-lg font-bold gw2-brand mb-2">Squad Analytics</h3>
+                        <div id="squadAnalyticsContent" class="space-y-3 text-sm text-gray-200"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -507,6 +519,17 @@
             "frontline-dps", "ranged-dps", "backline-dps", "utility", "flexible"
         ];
         const allowedGear = ["legendary", "ascended", "exotic", "rare", "mixed"];
+        const roleLabels = {
+            "ranged-healer": "Ranged Healer",
+            "melee-healer": "Melee Healer",
+            "cleanse-support": "Cleanse Support",
+            "boon-support": "Boon Support",
+            "frontline-dps": "Frontline DPS",
+            "ranged-dps": "Ranged DPS",
+            "backline-dps": "Backline DPS",
+            "utility": "Utility",
+            "flexible": "Flexible"
+        };
 
         // Boons Database - What boons can each class/spec provide
         const boonsByClass = {
@@ -592,6 +615,8 @@
         // Data management
         const rosterData = JSON.parse(localStorage.getItem('gw2Roster')) || [];
         const squadsData = JSON.parse(localStorage.getItem('gw2Squads')) || [];
+        const defaultRoleTargets = allowedRoles.reduce((acc, r) => { acc[r] = 0; return acc; }, {});
+        const roleTargets = { ...defaultRoleTargets, ...(JSON.parse(localStorage.getItem('gw2RoleTargets')) || {}) };
 
         // Validation helpers
         function validateCharacterRecord(rec) {
@@ -615,6 +640,10 @@
         // Save squads to localStorage
         function saveSquads() {
             localStorage.setItem('gw2Squads', JSON.stringify(squadsData));
+        }
+
+        function saveRoleTargets() {
+            localStorage.setItem('gw2RoleTargets', JSON.stringify(roleTargets));
         }
 
         // Populate boon class select
@@ -737,6 +766,41 @@
                 return 0;
             });
             return sorted;
+        }
+
+        function renderRoleTargetsUI() {
+            const container = document.getElementById('roleTargetsContainer');
+            if (!container) return;
+            container.innerHTML = allowedRoles.map(role => {
+                const targetVal = roleTargets[role] ?? 0;
+                return `
+                    <div class="grid grid-cols-5 items-center gap-2 bg-[rgba(0,0,0,0.25)] px-2 py-1 rounded">
+                        <div class="col-span-2 text-gray-200">${roleLabels[role] || role}</div>
+                        <input data-role-target="${role}" type="number" min="0" class="input-field col-span-1" value="${targetVal}" aria-label="Target for ${roleLabels[role] || role}">
+                        <div class="text-xs text-gray-400 col-span-2" id="role-target-status-${role}"></div>
+                    </div>
+                `;
+            }).join('');
+            updateRoleTargetsStatus();
+        }
+
+        function updateRoleTargetsStatus() {
+            const counts = rosterData.reduce((acc, c) => {
+                acc[c.role] = (acc[c.role] || 0) + 1;
+                return acc;
+            }, {});
+            allowedRoles.forEach(role => {
+                const target = Number(roleTargets[role] || 0);
+                const current = counts[role] || 0;
+                const delta = current - target;
+                const el = document.getElementById(`role-target-status-${role}`);
+                if (el) {
+                    const status = target === 0 ? 'No target set' : `${current}/${target} (${delta >= 0 ? '+' : ''}${delta})`;
+                    const color = delta >= 0 ? '#00FF88' : '#FF6B6B';
+                    el.textContent = status;
+                    el.style.color = color;
+                }
+            });
         }
 
         function renderRoster() {
@@ -899,6 +963,8 @@
                 const commonSpec = specs.reduce((a, b) => specs.filter(x => x === a).length > specs.filter(x => x === b).length ? a : b);
                 document.getElementById('commonClass').textContent = commonSpec;
             }
+
+            updateRoleTargetsStatus();
         }
 
         // Update Team Boons Analysis
@@ -1114,6 +1180,8 @@
 
         document.getElementById('closeSquadsModal').addEventListener('click', function() {
             document.getElementById('squadsModal').style.display = 'none';
+            const panel = document.getElementById('squadAnalyticsPanel');
+            if (panel) panel.style.display = 'none';
         });
 
         // Render Squads List
@@ -1147,6 +1215,7 @@
                             </div>
                             <div style="display: flex; gap: 8px;">
                                 <button onclick="viewSquad(${squad.id})" class="btn-secondary" style="padding: 6px 12px; font-size: 12px;">View</button>
+                                <button onclick="showSquadAnalytics(${squad.id})" class="btn-secondary" style="padding: 6px 12px; font-size: 12px;">Analytics</button>
                                 <button onclick="exportSquad(${squad.id})" class="btn-secondary" style="padding: 6px 12px; font-size: 12px;">Export</button>
                                 <button onclick="mergeSquadToRoster(${squad.id})" class="btn-primary" style="padding: 6px 12px; font-size: 12px;">Merge to Roster</button>
                                 <button onclick="deleteSquad(${squad.id})" class="text-red-400 hover:text-red-300" style="padding: 6px 12px; font-size: 12px; font-weight: bold;">Delete</button>
@@ -1163,6 +1232,53 @@
                     </div>
                 `;
             }).join('');
+        }
+
+        function showSquadAnalytics(squadId) {
+            const panel = document.getElementById('squadAnalyticsPanel');
+            const content = document.getElementById('squadAnalyticsContent');
+            const squad = squadsData.find(s => s.id === squadId);
+            if (!panel || !content || !squad) return;
+
+            const roleCounts = {};
+            const gearCounts = {};
+            const tagCounts = {};
+            const boonCounts = {};
+
+            squad.members.forEach(member => {
+                roleCounts[member.role] = (roleCounts[member.role] || 0) + 1;
+                gearCounts[member.gear] = (gearCounts[member.gear] || 0) + 1;
+                (member.tags || []).forEach(t => {
+                    const key = t.toLowerCase();
+                    tagCounts[key] = (tagCounts[key] || 0) + 1;
+                });
+                if (boonsByClass[member.classSpec]) {
+                    boonsByClass[member.classSpec].forEach(b => {
+                        boonCounts[b] = (boonCounts[b] || 0) + 1;
+                    });
+                }
+            });
+
+            const roleHtml = Object.entries(roleCounts).map(([r,c]) => `<span class="tag-pill">${escapeHtml(roleLabels[r] || r)}: ${c}</span>`).join(' ');
+            const gearHtml = Object.entries(gearCounts).map(([g,c]) => `<span class="tag-pill">${escapeHtml(g)}: ${c}</span>`).join(' ');
+            const tagHtml = Object.entries(tagCounts).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([t,c]) => `<span class="tag-pill">${escapeHtml(t)}: ${c}</span>`).join(' ');
+            const boonHtml = Object.entries(boonCounts).sort((a,b)=>b[1]-a[1]).map(([b,c]) => `
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <img src="${boonIcons[b] || ''}" alt="${b}" style="width:20px;height:20px;">
+                    <span>${b}</span>
+                    <span class="text-gray-400 text-xs">×${c}</span>
+                </div>
+            `).join('');
+
+            content.innerHTML = `
+                <div><strong>Squad:</strong> ${escapeHtml(squad.name)} (${squad.members.length} members)</div>
+                <div><strong>Roles:</strong> ${roleHtml || '—'}</div>
+                <div><strong>Gear:</strong> ${gearHtml || '—'}</div>
+                <div><strong>Top Tags:</strong> ${tagHtml || '—'}</div>
+                <div><strong>Boons (full coverage):</strong><div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">${boonHtml || '—'}</div></div>
+            `;
+            panel.style.display = 'block';
+            panel.scrollIntoView({behavior:'smooth'});
         }
 
         // View Squad Details
@@ -1205,17 +1321,41 @@
             }
 
             const duplicates = squad.members.filter(rec => isDuplicateCharacter(rec, rosterData));
-            let proceed = true;
+            let strategy = 'keep-newest';
             if (duplicates.length > 0) {
-                proceed = confirm(`Detected ${duplicates.length} duplicate(s). Merge and keep duplicates?`);
+                const choice = prompt(`Detected ${duplicates.length} duplicate(s) (player+character). Choose strategy: keep-newest | keep-local | keep-incoming | keep-both`, 'keep-newest');
+                if (!choice) return;
+                strategy = choice.trim();
+                if (!['keep-newest','keep-local','keep-incoming','keep-both'].includes(strategy)) {
+                    alert('Invalid strategy. Merge cancelled.');
+                    return;
+                }
             }
 
-            if (proceed && confirm(`Merge "${squad.name}" (${squad.members.length} members) into your roster?`)) {
-                rosterData.push(...squad.members);
+            const merged = [...rosterData];
+            squad.members.forEach(rec => {
+                const idx = merged.findIndex(r => r.playerName.toLowerCase() === rec.playerName.toLowerCase() && r.characterName.toLowerCase() === rec.characterName.toLowerCase());
+                if (idx === -1) {
+                    merged.push(rec);
+                } else {
+                    if (strategy === 'keep-local') return;
+                    if (strategy === 'keep-incoming') { merged[idx] = rec; return; }
+                    if (strategy === 'keep-both') { merged.push(rec); return; }
+                    if (strategy === 'keep-newest') {
+                        const localDate = Date.parse(merged[idx].addedDate || 0) || 0;
+                        const incomingDate = Date.parse(rec.addedDate || 0) || Date.now();
+                        if (incomingDate >= localDate) merged[idx] = rec;
+                    }
+                }
+            });
+
+            if (confirm(`Merge "${squad.name}" (${squad.members.length} members) using strategy "${strategy}"?`)) {
+                rosterData.length = 0;
+                rosterData.push(...merged);
                 saveRoster();
                 renderRoster();
                 updateTeamBoons();
-                alert(`${squad.members.length} members merged successfully!`);
+                alert(`${squad.members.length} members processed with strategy ${strategy}.`);
                 document.getElementById('squadsModal').style.display = 'none';
             }
         }
@@ -1277,7 +1417,21 @@
             renderRoster();
         });
 
+        document.getElementById('saveRoleTargetsBtn').addEventListener('click', () => {
+            const inputs = document.querySelectorAll('[data-role-target]');
+            inputs.forEach(input => {
+                const role = input.getAttribute('data-role-target');
+                const val = Math.max(0, Number(input.value || 0));
+                roleTargets[role] = val;
+                input.value = val;
+            });
+            saveRoleTargets();
+            updateRoleTargetsStatus();
+            alert('Role targets saved');
+        });
+
         // Initial render
+        renderRoleTargetsUI();
         populateBoonSelect();
         renderRoster();
         updateTeamBoons();
