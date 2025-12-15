@@ -357,6 +357,17 @@
                                 >
                             </div>
 
+                            <!-- Build Link -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-semibold mb-2">Build Link (Optional)</label>
+                                <input 
+                                    type="url" 
+                                    id="buildLink" 
+                                    class="input-field w-full"
+                                    placeholder="https://gw2skills.net/editor/..."
+                                >
+                            </div>
+
                             <!-- Buttons -->
                             <div class="flex gap-4">
                                 <button type="submit" class="btn-primary">Add Character</button>
@@ -738,6 +749,57 @@
             "necromancer-ritualist": ["Might", "Regeneration", "Stability", "Alacrity", "Resistance"]
         };
 
+        // Recommended Builds Database
+        const recommendedBuilds = {
+            "guardian-firebrand": [
+                { name: "Heal Firebrand (Minstrel)", url: "https://gw2skills.net/editor/?PWwAEt3lVwQYIsJmJWyXqPVA-D2IY1on/MyUClpCo3B-w" },
+                { name: "Cele Firebrand (Roaming)", url: "https://gw2skills.net/editor/" }
+            ],
+            "guardian-willbender": [
+                { name: "Power Willbender (Roaming)", url: "https://gw2skills.net/editor/" }
+            ],
+            "revenant-herald": [
+                { name: "Power Herald (Zerg)", url: "https://gw2skills.net/editor/" }
+            ],
+            "revenant-vindicator": [
+                { name: "Power Vindicator (Zerg)", url: "https://gw2skills.net/editor/" }
+            ],
+            "warrior-spellbreaker": [
+                { name: "Support Spellbreaker (Zerg)", url: "https://gw2skills.net/editor/" }
+            ],
+            "warrior-berserker": [
+                { name: "Power Berserker (Zerg)", url: "https://gw2skills.net/editor/" }
+            ],
+            "ranger-druid": [
+                { name: "Support Druid (Immob)", url: "https://gw2skills.net/editor/" }
+            ],
+            "engineer-scrapper": [
+                { name: "Heal Scrapper (Zerg)", url: "https://gw2skills.net/editor/" }
+            ],
+            "thief-daredevil": [
+                { name: "Power Daredevil (Staff)", url: "https://gw2skills.net/editor/" }
+            ],
+            "elementalist-tempest": [
+                { name: "Heal Tempest (Auramancer)", url: "https://gw2skills.net/editor/" }
+            ],
+            "elementalist-weaver": [
+                { name: "Power Weaver (Roaming)", url: "https://gw2skills.net/editor/" }
+            ],
+            "mesmer-chronomancer": [
+                { name: "Support Chrono (Grav Well)", url: "https://gw2skills.net/editor/" }
+            ],
+            "mesmer-virtuoso": [
+                { name: "Power Virtuoso (Spike)", url: "https://gw2skills.net/editor/" }
+            ],
+            "necromancer-scourge": [
+                { name: "Power Scourge (Zerg)", url: "https://gw2skills.net/editor/" },
+                { name: "Cele Scourge (Roaming)", url: "https://gw2skills.net/editor/" }
+            ],
+            "necromancer-reaper": [
+                { name: "Power Reaper (Chill)", url: "https://gw2skills.net/editor/" }
+            ]
+        };
+
         // Boon icons from GW2 Wiki (using static paths)
         const boonIcons = {
             "Might": "https://wiki.guildwars2.com/images/7/7c/Might.png",
@@ -888,12 +950,30 @@
             
             addBtn.style.display = 'block';
             const boons = boonsByClass[classSpec];
-            displayArea.innerHTML = boons.map(boon => `
+            let html = boons.map(boon => `
                 <div style="background: #4A5568; border-radius: 8px; padding: 10px; text-align: center; color: white; font-weight: bold; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 70px;">
                     <img src="${boonIcons[boon] || ''}" alt="${boon}" style="width: 32px; height: 32px; filter: drop-shadow(0 0 2px rgba(0,0,0,0.8));">
                     <span style="font-size: 12px;">${boon}</span>
                 </div>
             `).join('');
+
+            // Append Recommended Builds
+            if (recommendedBuilds[classSpec] && recommendedBuilds[classSpec].length > 0) {
+                html += `
+                    <div class="col-span-full mt-4 pt-4 border-t border-gray-600">
+                        <h4 class="text-sm font-bold text-gray-300 mb-2">Recommended Builds</h4>
+                        <div class="flex flex-wrap gap-2">
+                            ${recommendedBuilds[classSpec].map(build => `
+                                <a href="${build.url}" target="_blank" class="btn-secondary text-xs flex items-center gap-1 hover:text-blue-300">
+                                    🔗 ${build.name}
+                                </a>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            displayArea.innerHTML = html;
         });
 
         // Add Generic Character
@@ -941,6 +1021,7 @@
                 gear: document.getElementById('gear').value,
                 notes: document.getElementById('notes').value.trim(),
                 tags: (document.getElementById('tags').value || '').split(',').map(t => t.trim()).filter(Boolean),
+                buildLink: document.getElementById('buildLink').value.trim(),
                 addedDate: new Date().toLocaleDateString()
             };
 
@@ -1112,6 +1193,7 @@
                             <td>
                                 <textarea class="input-field w-full" id="editNotes" rows="2">${escapeHtml(char.notes || '')}</textarea>
                                 <input class="input-field w-full mt-2" id="editTags" value="${escapeHtml((char.tags || []).join(', '))}" placeholder="tags comma separated">
+                                <input class="input-field w-full mt-2" id="editBuildLink" value="${escapeHtml(char.buildLink || '')}" placeholder="Build URL">
                             </td>
                             <td class="space-x-2">
                                 <button onclick="saveEdit(${char.id})" class="btn-primary text-sm" aria-label="Save edits">Save</button>
@@ -1132,6 +1214,7 @@
                         <td>
                             ${escapeHtml(char.notes || '-')}
                             <div>${tagHtml || ''}</div>
+                            ${char.buildLink ? `<div class="mt-1"><a href="${escapeHtml(char.buildLink)}" target="_blank" class="text-blue-400 hover:text-blue-300 text-xs flex items-center gap-1">🔗 Build Link</a></div>` : ''}
                         </td>
                         <td class="space-x-2">
                             <button onclick="startEdit(${char.id})" class="btn-secondary text-sm" aria-label="Edit character">Edit</button>
@@ -1173,7 +1256,8 @@
                 classSpec: document.getElementById('editClassSpec').value.trim(),
                 gear: document.getElementById('editGear').value,
                 notes: document.getElementById('editNotes').value.trim(),
-                tags: (document.getElementById('editTags').value || '').split(',').map(t => t.trim()).filter(Boolean)
+                tags: (document.getElementById('editTags').value || '').split(',').map(t => t.trim()).filter(Boolean),
+                buildLink: document.getElementById('editBuildLink').value.trim()
             };
 
             const validation = validateCharacterRecord(updated);
