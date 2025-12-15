@@ -363,6 +363,7 @@
                                         <option value="">Select preset</option>
                                     </select>
                                     <button id="applyRolePresetBtn" class="btn-secondary text-sm">Apply Preset</button>
+                                    <button id="clearRolePresetBtn" class="btn-secondary text-sm">Clear Presets</button>
                                     <button id="saveRoleTargetsBtn" class="btn-secondary text-sm">Save Targets</button>
                                 </div>
                             </div>
@@ -1500,6 +1501,16 @@
             renderRoleTargetsUI();
             updateRoleTargetsStatus();
             alert(`Applied preset: ${rolePresets[presetKey].label}`);
+        });
+
+        document.getElementById('clearRolePresetBtn').addEventListener('click', () => {
+            allowedRoles.forEach(role => {
+                roleTargets[role] = 0;
+            });
+            saveRoleTargets();
+            renderRoleTargetsUI();
+            updateRoleTargetsStatus();
+            document.getElementById('rolePresetSelect').value = '';
         });
 
         // Initial render
