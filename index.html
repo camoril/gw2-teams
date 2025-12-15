@@ -356,9 +356,15 @@
                         </div>
 
                         <div class="mt-6 pt-4 border-t border-gray-700">
-                            <div class="flex items-center justify-between mb-3">
+                            <div class="flex flex-wrap items-center gap-2 mb-3 justify-between">
                                 <h3 class="text-lg font-bold text-gray-200">Role Targets</h3>
-                                <button id="saveRoleTargetsBtn" class="btn-secondary text-sm">Save Targets</button>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <select id="rolePresetSelect" class="input-field text-sm" aria-label="Role preset">
+                                        <option value="">Select preset</option>
+                                    </select>
+                                    <button id="applyRolePresetBtn" class="btn-secondary text-sm">Apply Preset</button>
+                                    <button id="saveRoleTargetsBtn" class="btn-secondary text-sm">Save Targets</button>
+                                </div>
                             </div>
                             <div id="roleTargetsContainer" class="space-y-2 text-sm text-gray-200"></div>
                         </div>
@@ -529,6 +535,50 @@
             "backline-dps": "Backline DPS",
             "utility": "Utility",
             "flexible": "Flexible"
+        };
+        const rolePresets = {
+            "zerg-30": {
+                label: "Zerg 30",
+                targets: {
+                    "ranged-healer": 2,
+                    "melee-healer": 2,
+                    "cleanse-support": 2,
+                    "boon-support": 4,
+                    "frontline-dps": 8,
+                    "ranged-dps": 4,
+                    "backline-dps": 4,
+                    "utility": 2,
+                    "flexible": 2
+                }
+            },
+            "strike-10": {
+                label: "Strike 10",
+                targets: {
+                    "ranged-healer": 1,
+                    "melee-healer": 1,
+                    "cleanse-support": 1,
+                    "boon-support": 2,
+                    "frontline-dps": 2,
+                    "ranged-dps": 1,
+                    "backline-dps": 1,
+                    "utility": 1,
+                    "flexible": 1
+                }
+            },
+            "gvg-15": {
+                label: "GvG 15",
+                targets: {
+                    "ranged-healer": 1,
+                    "melee-healer": 2,
+                    "cleanse-support": 2,
+                    "boon-support": 3,
+                    "frontline-dps": 4,
+                    "ranged-dps": 1,
+                    "backline-dps": 1,
+                    "utility": 1,
+                    "flexible": 0
+                }
+            }
         };
 
         // Boons Database - What boons can each class/spec provide
@@ -782,6 +832,12 @@
                 `;
             }).join('');
             updateRoleTargetsStatus();
+            const presetSelect = document.getElementById('rolePresetSelect');
+            if (presetSelect) {
+                presetSelect.innerHTML = '<option value="">Select preset</option>' + Object.entries(rolePresets).map(([key, preset]) => `
+                    <option value="${key}">${preset.label}</option>
+                `).join('');
+            }
         }
 
         function updateRoleTargetsStatus() {
@@ -1428,6 +1484,22 @@
             saveRoleTargets();
             updateRoleTargetsStatus();
             alert('Role targets saved');
+        });
+
+        document.getElementById('applyRolePresetBtn').addEventListener('click', () => {
+            const presetKey = document.getElementById('rolePresetSelect').value;
+            if (!presetKey || !rolePresets[presetKey]) {
+                alert('Select a preset first.');
+                return;
+            }
+            const preset = rolePresets[presetKey].targets;
+            allowedRoles.forEach(role => {
+                roleTargets[role] = preset[role] ?? 0;
+            });
+            saveRoleTargets();
+            renderRoleTargetsUI();
+            updateRoleTargetsStatus();
+            alert(`Applied preset: ${rolePresets[presetKey].label}`);
         });
 
         // Initial render
