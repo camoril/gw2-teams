@@ -572,6 +572,7 @@
         const rolePresets = {
             "zerg-30": {
                 label: "Zerg 30",
+                description: "Standard 30-man Zerg composition.",
                 targets: {
                     "ranged-healer": 2,
                     "melee-healer": 2,
@@ -586,6 +587,7 @@
             },
             "strike-10": {
                 label: "Strike 10",
+                description: "Standard 10-man Strike Mission composition.",
                 targets: {
                     "ranged-healer": 1,
                     "melee-healer": 1,
@@ -600,6 +602,7 @@
             },
             "gvg-15": {
                 label: "GvG 15",
+                description: "Standard GvG composition focused on balanced parties.",
                 targets: {
                     "ranged-healer": 1,
                     "melee-healer": 2,
@@ -609,6 +612,51 @@
                     "ranged-dps": 1,
                     "backline-dps": 1,
                     "utility": 1,
+                    "flexible": 0
+                }
+            },
+            "minstrel-blob-50": {
+                label: "Minstrel Blob (50)",
+                description: "Stacks of supportive healers (Minstrel Firebrands, Tempests) overwhelming enemies with sustain, strong against direct fights but slow on objectives.",
+                targets: {
+                    "ranged-healer": 8,
+                    "melee-healer": 10,
+                    "cleanse-support": 8,
+                    "boon-support": 10,
+                    "frontline-dps": 8,
+                    "ranged-dps": 2,
+                    "backline-dps": 2,
+                    "utility": 2,
+                    "flexible": 0
+                }
+            },
+            "boon-ball-30": {
+                label: "Boon Ball (30)",
+                description: "Focuses on high boon uptime (Quickness, Alacrity, Stability, Protection) for massive damage and defense.",
+                targets: {
+                    "ranged-healer": 2,
+                    "melee-healer": 4,
+                    "cleanse-support": 2,
+                    "boon-support": 8,
+                    "frontline-dps": 10,
+                    "ranged-dps": 2,
+                    "backline-dps": 0,
+                    "utility": 2,
+                    "flexible": 0
+                }
+            },
+            "zerg-busting-20": {
+                label: "Zerg Busting (20)",
+                description: "Mix of high burst, CC, and boon ripping to disrupt large groups.",
+                targets: {
+                    "ranged-healer": 2,
+                    "melee-healer": 2,
+                    "cleanse-support": 2,
+                    "boon-support": 4,
+                    "frontline-dps": 6,
+                    "ranged-dps": 2,
+                    "backline-dps": 0,
+                    "utility": 2,
                     "flexible": 0
                 }
             }
@@ -896,7 +944,7 @@
             const presetSelect = document.getElementById('rolePresetSelect');
             if (presetSelect) {
                 presetSelect.innerHTML = '<option value="">Select preset</option>' + Object.entries(rolePresets).map(([key, preset]) => `
-                    <option value="${key}">${preset.label}</option>
+                    <option value="${key}" title="${preset.description || ''}">${preset.label}</option>
                 `).join('');
             }
         }
