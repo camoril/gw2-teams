@@ -1998,29 +1998,59 @@
             }
 
             const merged = [...rosterData];
+            let addedCount = 0;
+            let updatedCount = 0;
+            let skippedCount = 0;
+
             squad.members.forEach(rec => {
-                const idx = merged.findIndex(r => r.playerName.toLowerCase() === rec.playerName.toLowerCase() && r.characterName.toLowerCase() === rec.characterName.toLowerCase());
+                // Clone record to avoid modifying squad data and ensure unique ID
+                const newRec = { ...rec, id: Date.now() + Math.random() }; 
+                
+                const idx = merged.findIndex(r => 
+                    r.playerName.trim().toLowerCase() === newRec.playerName.trim().toLowerCase() && 
+                    r.characterName.trim().toLowerCase() === newRec.characterName.trim().toLowerCase()
+                );
+
                 if (idx === -1) {
-                    merged.push(rec);
+                    merged.push(newRec);
+                    addedCount++;
                 } else {
-                    if (strategy === 'keep-local') return;
-                    if (strategy === 'keep-incoming') { merged[idx] = rec; return; }
-                    if (strategy === 'keep-both') { merged.push(rec); return; }
+                    if (strategy === 'keep-local') {
+                        skippedCount++;
+                        return;
+                    }
+                    if (strategy === 'keep-incoming') { 
+                        merged[idx] = newRec; 
+                        updatedCount++;
+                        return; 
+                    }
+                    if (strategy === 'keep-both') { 
+                        merged.push(newRec); 
+                        addedCount++;
+                        return; 
+                    }
                     if (strategy === 'keep-newest') {
                         const localDate = Date.parse(merged[idx].addedDate || 0) || 0;
-                        const incomingDate = Date.parse(rec.addedDate || 0) || Date.now();
-                        if (incomingDate >= localDate) merged[idx] = rec;
+                        const incomingDate = Date.parse(newRec.addedDate || 0) || Date.now();
+                        if (incomingDate >= localDate) {
+                            merged[idx] = newRec;
+                            updatedCount++;
+                        } else {
+                            skippedCount++;
+                        }
                     }
                 }
             });
 
-            if (confirm(`Merge "${squad.name}" (${squad.members.length} members) using strategy "${strategy}"?`)) {
+            if (confirm(`Merge "${squad.name}"?\n\nStrategy: ${strategy}\nAdded: ${addedCount}\nUpdated: ${updatedCount}\nSkipped: ${skippedCount}`)) {
                 rosterData.length = 0;
                 rosterData.push(...merged);
                 saveRoster();
                 renderRoster();
                 updateTeamBoons();
-                alert(`${squad.members.length} members processed with strategy ${strategy}.`);
+                updateSubgroupAnalysis();
+                updateRoleTargetsStatus();
+                alert(`Merge complete.\nAdded: ${addedCount}, Updated: ${updatedCount}, Skipped: ${skippedCount}`);
                 document.getElementById('squadsModal').style.display = 'none';
             }
         }
