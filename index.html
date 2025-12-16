@@ -2003,15 +2003,35 @@
             let skippedCount = 0;
 
             squad.members.forEach(rec => {
-                // Clone record to avoid modifying squad data and ensure unique ID
-                const newRec = { ...rec, id: Date.now() + Math.random() }; 
+                // Clone record to avoid modifying squad data
+                const newRec = { ...rec }; 
                 
-                const idx = merged.findIndex(r => 
-                    r.playerName.trim().toLowerCase() === newRec.playerName.trim().toLowerCase() && 
-                    r.characterName.trim().toLowerCase() === newRec.characterName.trim().toLowerCase()
-                );
+                // 1. Try matching by ID (Strongest link)
+                let idx = -1;
+                if (newRec.id) {
+                    idx = merged.findIndex(r => r.id === newRec.id);
+                }
+
+                // 2. If not found by ID, try matching by Name (unless it's a Fill/Generic)
+                if (idx === -1) {
+                    const isFill = (newRec.playerName || '').toLowerCase().includes('(fill)') || 
+                                   (newRec.tags || []).includes('Fill');
+                    
+                    if (!isFill) {
+                        idx = merged.findIndex(r => 
+                            r.playerName.trim().toLowerCase() === newRec.playerName.trim().toLowerCase() && 
+                            r.characterName.trim().toLowerCase() === newRec.characterName.trim().toLowerCase()
+                        );
+                    }
+                }
 
                 if (idx === -1) {
+                    // Ensure ID is unique if we are adding it as new (and it didn't match existing ID)
+                    // If the ID from import collides with nothing, we keep it (to allow future sync).
+                    // If it somehow collides (unlikely if idx=-1), we regen.
+                    if (merged.some(r => r.id === newRec.id)) {
+                         newRec.id = Date.now() + Math.random();
+                    }
                     merged.push(newRec);
                     addedCount++;
                 } else {
