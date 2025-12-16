@@ -1793,6 +1793,25 @@
                 try {
                     const imported = JSON.parse(event.target.result);
                     if (Array.isArray(imported) && imported.length > 0) {
+                        // --- MIGRATION LOGIC FOR SQUAD IMPORT ---
+                        const roleMigrationMap = {
+                            "ranged-healer": "support-cleanse",
+                            "melee-healer": "support-stab",
+                            "cleanse-support": "support-cleanse",
+                            "boon-support": "support-stab",
+                            "frontline-dps": "dps-melee",
+                            "ranged-dps": "dps-ranged",
+                            "backline-dps": "dps-ranged",
+                            "utility": "dps-strip",
+                            "flexible": "roamer"
+                        };
+                        imported.forEach(char => {
+                            if (roleMigrationMap[char.role]) {
+                                char.role = roleMigrationMap[char.role];
+                            }
+                        });
+                        // ----------------------------------------
+
                         const invalids = imported.map(validateCharacterRecord).filter(v => !v.valid);
                         if (invalids.length > 0) {
                             alert('Import cancelled due to invalid records in squad.');
