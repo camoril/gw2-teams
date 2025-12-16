@@ -583,6 +583,46 @@
         </div>
     </div>
 
+    <!-- Quick Add Modal -->
+    <div id="quickAddModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden z-50">
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg w-96 border border-gray-600">
+            <h3 id="quickAddTitle" class="text-xl font-bold text-white mb-4">Quick Add Character</h3>
+            
+            <div class="mb-4">
+                <label class="block text-gray-300 text-sm font-bold mb-2">Profession / Spec</label>
+                <select id="quickAddSpec" class="input-field w-full">
+                    <!-- Populated by JS -->
+                </select>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-gray-300 text-sm font-bold mb-2">Subgroup</label>
+                <select id="quickAddSubgroup" class="input-field w-full">
+                    <option value="1">Subgroup 1</option>
+                    <option value="2">Subgroup 2</option>
+                    <option value="3">Subgroup 3</option>
+                    <option value="4">Subgroup 4</option>
+                    <option value="5">Subgroup 5</option>
+                    <option value="6">Subgroup 6</option>
+                    <option value="7">Subgroup 7</option>
+                    <option value="8">Subgroup 8</option>
+                    <option value="9">Subgroup 9</option>
+                    <option value="10">Subgroup 10</option>
+                    <option value="11">Subgroup 11</option>
+                    <option value="12">Subgroup 12</option>
+                    <option value="13">Subgroup 13</option>
+                    <option value="14">Subgroup 14</option>
+                    <option value="15">Subgroup 15</option>
+                </select>
+            </div>
+
+            <div class="flex justify-end gap-2">
+                <button onclick="closeQuickAddModal()" class="btn-secondary">Cancel</button>
+                <button onclick="confirmQuickAdd()" class="btn-primary">Add Character</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Allowed values
         const allowedRoles = [
@@ -1199,10 +1239,11 @@
             container.innerHTML = allowedRoles.map(role => {
                 const targetVal = roleTargets[role] ?? 0;
                 return `
-                    <div class="grid grid-cols-5 items-center gap-2 bg-[rgba(0,0,0,0.25)] px-2 py-1 rounded">
-                        <div class="col-span-2 text-gray-200">${roleLabels[role] || role}</div>
-                        <input data-role-target="${role}" type="number" min="0" class="input-field col-span-1" value="${targetVal}" aria-label="Target for ${roleLabels[role] || role}">
-                        <div class="text-xs text-gray-400 col-span-2" id="role-target-status-${role}"></div>
+                    <div class="grid grid-cols-6 items-center gap-2 bg-[rgba(0,0,0,0.25)] px-2 py-1 rounded">
+                        <div class="col-span-2 text-gray-200 text-sm truncate" title="${roleLabels[role] || role}">${roleLabels[role] || role}</div>
+                        <input data-role-target="${role}" type="number" min="0" class="input-field col-span-1 text-center" value="${targetVal}" aria-label="Target for ${roleLabels[role] || role}">
+                        <div class="text-xs text-gray-400 col-span-2 text-center" id="role-target-status-${role}"></div>
+                        <button onclick="openQuickAddModal('${role}')" class="col-span-1 btn-secondary text-xs px-1 py-1 h-full flex items-center justify-center" title="Quick Add Character">+ Add</button>
                     </div>
                 `;
             }).join('');
@@ -1214,6 +1255,75 @@
                 `).join('');
             }
         }
+
+        // --- Quick Add Logic ---
+        let currentQuickAddRole = null;
+
+        function openQuickAddModal(role) {
+            currentQuickAddRole = role;
+            document.getElementById('quickAddTitle').textContent = `Quick Add: ${roleLabels[role] || role}`;
+            
+            // Populate Specs
+            const select = document.getElementById('quickAddSpec');
+            select.innerHTML = '<option value="">Select Profession/Spec</option>';
+            
+            // Sort specs alphabetically
+            const specs = Object.keys(boonsByClass).sort();
+            
+            specs.forEach(spec => {
+                const parts = spec.split('-');
+                const className = capitalize(parts[0]);
+                const specName = parts[1] ? capitalize(parts[1]) : 'Core';
+                select.innerHTML += `<option value="${spec}">${className} - ${specName}</option>`;
+            });
+
+            document.getElementById('quickAddModal').classList.remove('hidden');
+        }
+
+        function closeQuickAddModal() {
+            document.getElementById('quickAddModal').classList.add('hidden');
+            currentQuickAddRole = null;
+        }
+
+        function confirmQuickAdd() {
+            if (!currentQuickAddRole) return;
+            
+            const spec = document.getElementById('quickAddSpec').value;
+            const subgroup = parseInt(document.getElementById('quickAddSubgroup').value);
+            
+            if (!spec) {
+                alert('Please select a profession/spec.');
+                return;
+            }
+
+            const parts = spec.split('-');
+            const className = capitalize(parts[0]);
+            const specName = parts[1] ? capitalize(parts[1]) : 'Core';
+
+            const newChar = {
+                id: Date.now(),
+                playerName: `(Fill) ${specName}`,
+                characterName: `${specName} ${currentQuickAddRole.split('-')[1] || 'Fill'}`,
+                role: currentQuickAddRole,
+                classSpec: spec,
+                gear: 'exotic', // Default for fills
+                subgroup: subgroup,
+                notes: 'Auto-filled',
+                tags: ['Fill'],
+                buildLink: ''
+            };
+
+            rosterData.push(newChar);
+            saveRoster();
+            renderRoster();
+            updateTeamBoons();
+            updateSubgroupAnalysis();
+            updateRoleTargetsStatus();
+            
+            closeQuickAddModal();
+            // alert('Character added!'); // Optional feedback
+        }
+        // -----------------------
 
         function updateRoleTargetsStatus() {
             const counts = rosterData.reduce((acc, c) => {
