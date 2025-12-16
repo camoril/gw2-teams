@@ -1239,11 +1239,11 @@
             container.innerHTML = allowedRoles.map(role => {
                 const targetVal = roleTargets[role] ?? 0;
                 return `
-                    <div class="grid grid-cols-6 items-center gap-2 bg-[rgba(0,0,0,0.25)] px-2 py-1 rounded">
-                        <div class="col-span-2 text-gray-200 text-sm truncate" title="${roleLabels[role] || role}">${roleLabels[role] || role}</div>
-                        <input data-role-target="${role}" type="number" min="0" class="input-field col-span-1 text-center" value="${targetVal}" aria-label="Target for ${roleLabels[role] || role}">
-                        <div class="text-xs text-gray-400 col-span-2 text-center" id="role-target-status-${role}"></div>
-                        <button onclick="openQuickAddModal('${role}')" class="col-span-1 btn-secondary text-xs px-1 py-1 h-full flex items-center justify-center" title="Quick Add Character">+ Add</button>
+                    <div class="grid grid-cols-12 items-center gap-2 bg-[rgba(0,0,0,0.25)] px-3 py-2 rounded mb-1">
+                        <div class="col-span-5 text-gray-100 font-medium truncate" title="${roleLabels[role] || role}">${roleLabels[role] || role}</div>
+                        <input data-role-target="${role}" type="number" min="0" class="input-field col-span-2 text-center font-bold" value="${targetVal}" aria-label="Target for ${roleLabels[role] || role}">
+                        <div class="text-sm text-gray-300 col-span-3 text-center font-mono" id="role-target-status-${role}"></div>
+                        <button onclick="openQuickAddModal('${role}')" class="col-span-2 btn-secondary text-xs px-2 py-1 h-full flex items-center justify-center" title="Quick Add Character">+ Add</button>
                     </div>
                 `;
             }).join('');
