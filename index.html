@@ -1686,15 +1686,17 @@
                 alert('No data to export for current filters.');
                 return;
             }
-            const header = ['playerName','characterName','role','classSpec','gear','notes','tags'];
+            const header = ['subgroup', 'playerName','characterName','role','classSpec','gear','notes','tags', 'buildLink'];
             const rows = filtered.map(c => [
+                c.subgroup || 1,
                 c.playerName,
                 c.characterName,
                 c.role,
                 c.classSpec,
                 c.gear,
                 (c.notes || '').replace(/"/g,'""'),
-                (c.tags || []).join('|')
+                (c.tags || []).join('|'),
+                (c.buildLink || '').replace(/"/g,'""')
             ]);
             const csv = [header.join(',')].concat(rows.map(r => r.map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(','))).join('\n');
             const blob = new Blob([csv], {type: 'text/csv'});
@@ -1732,6 +1734,25 @@
                 try {
                     const imported = JSON.parse(event.target.result);
                     if (Array.isArray(imported)) {
+                        // --- MIGRATION LOGIC FOR IMPORTS ---
+                        const roleMigrationMap = {
+                            "ranged-healer": "support-cleanse",
+                            "melee-healer": "support-stab",
+                            "cleanse-support": "support-cleanse",
+                            "boon-support": "support-stab",
+                            "frontline-dps": "dps-melee",
+                            "ranged-dps": "dps-ranged",
+                            "backline-dps": "dps-ranged",
+                            "utility": "dps-strip",
+                            "flexible": "roamer"
+                        };
+                        imported.forEach(char => {
+                            if (roleMigrationMap[char.role]) {
+                                char.role = roleMigrationMap[char.role];
+                            }
+                        });
+                        // -----------------------------------
+
                         const invalids = imported.map(validateCharacterRecord).filter(v => !v.valid);
                         if (invalids.length > 0) {
                             alert('Import cancelled due to invalid records. Please verify schema.');
