@@ -712,6 +712,16 @@
             }
         };
 
+        // Valid specs per role (Global Definition)
+        const roleSpecMap = {
+            "support-stab": ["guardian-firebrand", "mesmer-chronomancer", "revenant-herald", "guardian"],
+            "support-cleanse": ["elementalist-tempest", "engineer-scrapper", "ranger-druid", "necromancer-scourge", "guardian-firebrand"],
+            "dps-melee": ["guardian-dragonhunter", "guardian-willbender", "warrior-berserker", "warrior-spellbreaker", "warrior-bladesworn", "revenant-vindicator", "revenant-herald", "engineer-holosmith", "engineer-scrapper", "necromancer-reaper", "thief-daredevil"],
+            "dps-ranged": ["elementalist-weaver", "elementalist-catalyst", "elementalist-tempest", "necromancer-scourge", "necromancer-harbinger", "mesmer-virtuoso", "mesmer-mirage", "ranger-soulbeast", "engineer-mechanist", "thief-deadeye", "thief-specter"],
+            "dps-strip": ["necromancer-scourge", "mesmer-chronomancer", "warrior-spellbreaker"],
+            "roamer": [] // All
+        };
+
         // Boons Database - What boons can each class/spec provide
         const boonsByClass = {
             "guardian": ["Aegis", "Protection", "Regeneration", "Resistance"],
@@ -1285,16 +1295,6 @@
             const select = document.getElementById('quickAddSpec');
             select.innerHTML = '<option value="">Select Profession/Spec</option>';
             
-            // Define valid specs per role
-            const roleSpecMap = {
-                "support-stab": ["guardian-firebrand", "mesmer-chronomancer", "revenant-herald", "guardian-core"],
-                "support-cleanse": ["elementalist-tempest", "engineer-scrapper", "ranger-druid", "necromancer-scourge", "guardian-firebrand"],
-                "dps-melee": ["guardian-dragonhunter", "guardian-willbender", "warrior-berserker", "warrior-spellbreaker", "warrior-bladesworn", "revenant-vindicator", "revenant-herald", "engineer-holosmith", "engineer-scrapper", "necromancer-reaper", "thief-daredevil"],
-                "dps-ranged": ["elementalist-weaver", "elementalist-catalyst", "elementalist-tempest", "necromancer-scourge", "necromancer-harbinger", "mesmer-virtuoso", "mesmer-mirage", "ranger-soulbeast", "engineer-mechanist", "thief-deadeye", "thief-specter"],
-                "dps-strip": ["necromancer-scourge", "mesmer-chronomancer", "warrior-spellbreaker"],
-                "roamer": [] // All
-            };
-
             // Get valid specs for this role, or all if not defined/roamer
             const validSpecs = roleSpecMap[role] || [];
             
@@ -2209,6 +2209,73 @@
         renderRoster();
         updateTeamBoons();
         updateSubgroupAnalysis();
+
+        // --- Dynamic Class Filtering in Main Form ---
+        document.getElementById('role').addEventListener('change', function() {
+            const selectedRole = this.value;
+            const classSelect = document.getElementById('classSpec');
+            const validSpecs = roleSpecMap[selectedRole] || [];
+            
+            // Save current selection if possible
+            const currentVal = classSelect.value;
+
+            // Clear existing options (keep first "Select a class")
+            classSelect.innerHTML = '<option value="">Select a class</option>';
+
+            // Group specs by class for OptGroups
+            const groupedSpecs = {};
+            const allSpecs = Object.keys(boonsByClass).sort();
+
+            allSpecs.forEach(spec => {
+                // Filter logic
+                if (validSpecs.length > 0 && !validSpecs.includes(spec)) {
+                    return;
+                }
+
+                const parts = spec.split('-');
+                const className = capitalize(parts[0]);
+                const specName = parts[1] ? capitalize(parts[1]) : 'Core'; // e.g. "Firebrand" or "Core"
+                
+                if (!groupedSpecs[className]) {
+                    groupedSpecs[className] = [];
+                }
+                groupedSpecs[className].push({ val: spec, label: specName });
+            });
+
+            // Rebuild OptGroups
+            Object.keys(groupedSpecs).sort().forEach(className => {
+                const group = document.createElement('optgroup');
+                group.label = className;
+                groupedSpecs[className].forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.val;
+                    // Format: "Guardian - Firebrand" or just "Firebrand" inside the group?
+                    // The original code had "Guardian - Firebrand". Let's keep it consistent or make it cleaner.
+                    // Since it's inside an OptGroup "Guardian", just "Firebrand" is cleaner, 
+                    // but let's stick to "ClassName - SpecName" pattern if that's preferred, 
+                    // OR use the logic: if specName is 'Core', show 'Guardian (Base)', else 'Guardian - Firebrand'
+                    
+                    if (item.label === 'Core') {
+                        opt.textContent = `${className} (Base)`;
+                    } else {
+                        opt.textContent = `${className} - ${item.label}`;
+                    }
+                    group.appendChild(opt);
+                });
+                classSelect.appendChild(group);
+            });
+
+            // Restore selection if valid, else reset
+            if (currentVal && validSpecs.includes(currentVal)) {
+                classSelect.value = currentVal;
+            } else if (currentVal && validSpecs.length === 0) {
+                 // If role is roamer (empty validSpecs), keep selection
+                 classSelect.value = currentVal;
+            } else {
+                classSelect.value = "";
+            }
+        });
+        // --------------------------------------------
     </script>
 </body>
 </html>
