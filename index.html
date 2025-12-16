@@ -962,6 +962,24 @@
                 localStorage.setItem('gw2RoleTargets', JSON.stringify(roleTargets));
                 console.log("Migrated role targets to new schema.");
             }
+
+            // 3. Migrate Squads Data
+            let squadsChanged = false;
+            squadsData.forEach(squad => {
+                if (squad.members && Array.isArray(squad.members)) {
+                    squad.members.forEach(char => {
+                        if (roleMigrationMap[char.role]) {
+                            char.role = roleMigrationMap[char.role];
+                            squadsChanged = true;
+                        }
+                    });
+                }
+            });
+
+            if (squadsChanged) {
+                localStorage.setItem('gw2Squads', JSON.stringify(squadsData));
+                console.log("Migrated squads data to new role schema.");
+            }
         })();
         // ------------------------------------------------
 
