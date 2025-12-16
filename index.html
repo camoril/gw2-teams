@@ -208,15 +208,12 @@
                                 <label class="block text-sm font-semibold mb-2">Role *</label>
                                 <select id="role" class="input-field w-full" required>
                                     <option value="">Select a role</option>
-                                    <option value="ranged-healer">Ranged Healer</option>
-                                    <option value="melee-healer">Melee Healer</option>
-                                    <option value="cleanse-support">Cleanse Support</option>
-                                    <option value="boon-support">Boon Support (Stab/Aegis/Quickness/Alacrity)</option>
-                                    <option value="frontline-dps">Frontline DPS</option>
-                                    <option value="ranged-dps">Ranged DPS</option>
-                                    <option value="backline-dps">Backline DPS</option>
-                                    <option value="utility">Utility</option>
-                                    <option value="flexible">Flexible</option>
+                                    <option value="support-stab">Support (Stab/Aegis)</option>
+                                    <option value="support-cleanse">Support (Cleanse/Heal)</option>
+                                    <option value="dps-melee">DPS (Melee/Front)</option>
+                                    <option value="dps-ranged">DPS (Ranged/Back)</option>
+                                    <option value="dps-strip">DPS (Strip/Control)</option>
+                                    <option value="roamer">Roamer / Havoc</option>
                                 </select>
                             </div>
 
@@ -489,15 +486,12 @@
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                                 <select id="filterRole" class="input-field w-full" aria-label="Filter by role">
                                     <option value="">All roles</option>
-                                    <option value="ranged-healer">Ranged Healer</option>
-                                    <option value="melee-healer">Melee Healer</option>
-                                    <option value="cleanse-support">Cleanse Support</option>
-                                    <option value="boon-support">Boon Support</option>
-                                    <option value="frontline-dps">Frontline DPS</option>
-                                    <option value="ranged-dps">Ranged DPS</option>
-                                    <option value="backline-dps">Backline DPS</option>
-                                    <option value="utility">Utility</option>
-                                    <option value="flexible">Flexible</option>
+                                    <option value="support-stab">Support (Stab/Aegis)</option>
+                                    <option value="support-cleanse">Support (Cleanse/Heal)</option>
+                                    <option value="dps-melee">DPS (Melee/Front)</option>
+                                    <option value="dps-ranged">DPS (Ranged/Back)</option>
+                                    <option value="dps-strip">DPS (Strip/Control)</option>
+                                    <option value="roamer">Roamer / Havoc</option>
                                 </select>
                                 <select id="filterGear" class="input-field w-full" aria-label="Filter by gear">
                                     <option value="">All gear</option>
@@ -592,110 +586,88 @@
     <script>
         // Allowed values
         const allowedRoles = [
-            "ranged-healer", "melee-healer", "cleanse-support", "boon-support",
-            "frontline-dps", "ranged-dps", "backline-dps", "utility", "flexible"
+            "support-stab", "support-cleanse", "dps-melee", "dps-ranged", "dps-strip", "roamer"
         ];
         const allowedGear = ["legendary", "ascended", "exotic", "rare", "mixed"];
         const roleLabels = {
-            "ranged-healer": "Ranged Healer",
-            "melee-healer": "Melee Healer",
-            "cleanse-support": "Cleanse Support",
-            "boon-support": "Boon Support",
-            "frontline-dps": "Frontline DPS",
-            "ranged-dps": "Ranged DPS",
-            "backline-dps": "Backline DPS",
-            "utility": "Utility",
-            "flexible": "Flexible"
+            "support-stab": "Support (Stab/Aegis)",
+            "support-cleanse": "Support (Cleanse/Heal)",
+            "dps-melee": "DPS (Melee/Front)",
+            "dps-ranged": "DPS (Ranged/Back)",
+            "dps-strip": "DPS (Strip/Control)",
+            "roamer": "Roamer / Havoc"
         };
         const rolePresets = {
             "zerg-30": {
                 label: "Zerg 30",
                 description: "Standard 30-man Zerg composition.",
                 targets: {
-                    "ranged-healer": 2,
-                    "melee-healer": 2,
-                    "cleanse-support": 2,
-                    "boon-support": 4,
-                    "frontline-dps": 8,
-                    "ranged-dps": 4,
-                    "backline-dps": 4,
-                    "utility": 2,
-                    "flexible": 2
+                    "support-stab": 6,
+                    "support-cleanse": 6,
+                    "dps-melee": 10,
+                    "dps-ranged": 4,
+                    "dps-strip": 4,
+                    "roamer": 0
                 }
             },
             "strike-10": {
                 label: "Strike 10",
                 description: "Standard 10-man Strike Mission composition.",
                 targets: {
-                    "ranged-healer": 1,
-                    "melee-healer": 1,
-                    "cleanse-support": 1,
-                    "boon-support": 2,
-                    "frontline-dps": 2,
-                    "ranged-dps": 1,
-                    "backline-dps": 1,
-                    "utility": 1,
-                    "flexible": 1
+                    "support-stab": 2,
+                    "support-cleanse": 2,
+                    "dps-melee": 4,
+                    "dps-ranged": 2,
+                    "dps-strip": 0,
+                    "roamer": 0
                 }
             },
             "gvg-15": {
                 label: "GvG 15",
                 description: "Standard GvG composition focused on balanced parties.",
                 targets: {
-                    "ranged-healer": 1,
-                    "melee-healer": 2,
-                    "cleanse-support": 2,
-                    "boon-support": 3,
-                    "frontline-dps": 4,
-                    "ranged-dps": 1,
-                    "backline-dps": 1,
-                    "utility": 1,
-                    "flexible": 0
+                    "support-stab": 3,
+                    "support-cleanse": 3,
+                    "dps-melee": 6,
+                    "dps-ranged": 2,
+                    "dps-strip": 1,
+                    "roamer": 0
                 }
             },
             "minstrel-blob-50": {
                 label: "Minstrel Blob (50)",
                 description: "Stacks of supportive healers (Minstrel Firebrands, Tempests) overwhelming enemies with sustain, strong against direct fights but slow on objectives.",
                 targets: {
-                    "ranged-healer": 8,
-                    "melee-healer": 10,
-                    "cleanse-support": 8,
-                    "boon-support": 10,
-                    "frontline-dps": 8,
-                    "ranged-dps": 2,
-                    "backline-dps": 2,
-                    "utility": 2,
-                    "flexible": 0
+                    "support-stab": 12,
+                    "support-cleanse": 12,
+                    "dps-melee": 16,
+                    "dps-ranged": 5,
+                    "dps-strip": 5,
+                    "roamer": 0
                 }
             },
             "boon-ball-30": {
                 label: "Boon Ball (30)",
                 description: "Focuses on high boon uptime (Quickness, Alacrity, Stability, Protection) for massive damage and defense.",
                 targets: {
-                    "ranged-healer": 2,
-                    "melee-healer": 4,
-                    "cleanse-support": 2,
-                    "boon-support": 8,
-                    "frontline-dps": 10,
-                    "ranged-dps": 2,
-                    "backline-dps": 0,
-                    "utility": 2,
-                    "flexible": 0
+                    "support-stab": 8,
+                    "support-cleanse": 4,
+                    "dps-melee": 14,
+                    "dps-ranged": 2,
+                    "dps-strip": 2,
+                    "roamer": 0
                 }
             },
             "zerg-busting-20": {
                 label: "Zerg Busting (20)",
                 description: "Mix of high burst, CC, and boon ripping to disrupt large groups.",
                 targets: {
-                    "ranged-healer": 2,
-                    "melee-healer": 2,
-                    "cleanse-support": 2,
-                    "boon-support": 4,
-                    "frontline-dps": 6,
-                    "ranged-dps": 2,
-                    "backline-dps": 0,
-                    "utility": 2,
-                    "flexible": 0
+                    "support-stab": 4,
+                    "support-cleanse": 4,
+                    "dps-melee": 8,
+                    "dps-ranged": 2,
+                    "dps-strip": 2,
+                    "roamer": 0
                 }
             }
         };
@@ -894,6 +866,64 @@
         const squadsData = JSON.parse(localStorage.getItem('gw2Squads')) || [];
         const defaultRoleTargets = allowedRoles.reduce((acc, r) => { acc[r] = 0; return acc; }, {});
         const roleTargets = { ...defaultRoleTargets, ...(JSON.parse(localStorage.getItem('gw2RoleTargets')) || {}) };
+
+        // --- MIGRATION LOGIC (Old Roles -> New Roles) ---
+        (function migrateRoles() {
+            const roleMigrationMap = {
+                "ranged-healer": "support-cleanse",
+                "melee-healer": "support-stab",
+                "cleanse-support": "support-cleanse",
+                "boon-support": "support-stab",
+                "frontline-dps": "dps-melee",
+                "ranged-dps": "dps-ranged",
+                "backline-dps": "dps-ranged",
+                "utility": "dps-strip",
+                "flexible": "roamer"
+            };
+
+            let dataChanged = false;
+
+            // 1. Migrate Roster Data
+            rosterData.forEach(char => {
+                if (roleMigrationMap[char.role]) {
+                    char.role = roleMigrationMap[char.role];
+                    dataChanged = true;
+                }
+            });
+
+            if (dataChanged) {
+                localStorage.setItem('gw2Roster', JSON.stringify(rosterData));
+                console.log("Migrated roster data to new role schema.");
+            }
+
+            // 2. Migrate Role Targets
+            let targetsChanged = false;
+            // Check for old keys in roleTargets and move their values to new keys
+            Object.keys(roleTargets).forEach(key => {
+                if (roleMigrationMap[key]) {
+                    const newKey = roleMigrationMap[key];
+                    // Add the count from the old role to the new role
+                    roleTargets[newKey] = (roleTargets[newKey] || 0) + roleTargets[key];
+                    // Remove the old key
+                    delete roleTargets[key];
+                    targetsChanged = true;
+                }
+            });
+
+            // Also ensure no other invalid keys remain (optional, but good for cleanup)
+            Object.keys(roleTargets).forEach(key => {
+                if (!allowedRoles.includes(key)) {
+                    delete roleTargets[key];
+                    targetsChanged = true;
+                }
+            });
+
+            if (targetsChanged) {
+                localStorage.setItem('gw2RoleTargets', JSON.stringify(roleTargets));
+                console.log("Migrated role targets to new schema.");
+            }
+        })();
+        // ------------------------------------------------
 
         // Validation helpers
         function validateCharacterRecord(rec) {
@@ -1241,15 +1271,12 @@
                             <td><input class="input-field w-full" id="editCharacterName" value="${escapeHtml(char.characterName)}"></td>
                             <td>
                                 <select id="editRole" class="input-field w-full">
-                                    <option value="ranged-healer">Ranged Healer</option>
-                                    <option value="melee-healer">Melee Healer</option>
-                                    <option value="cleanse-support">Cleanse Support</option>
-                                    <option value="boon-support">Boon Support</option>
-                                    <option value="frontline-dps">Frontline DPS</option>
-                                    <option value="ranged-dps">Ranged DPS</option>
-                                    <option value="backline-dps">Backline DPS</option>
-                                    <option value="utility">Utility</option>
-                                    <option value="flexible">Flexible</option>
+                                    <option value="support-stab">Support (Stab/Aegis)</option>
+                                    <option value="support-cleanse">Support (Cleanse/Heal)</option>
+                                    <option value="dps-melee">DPS (Melee/Front)</option>
+                                    <option value="dps-ranged">DPS (Ranged/Back)</option>
+                                    <option value="dps-strip">DPS (Strip/Control)</option>
+                                    <option value="roamer">Roamer / Havoc</option>
                                 </select>
                             </td>
                             <td><input class="input-field w-full" id="editClassSpec" value="${escapeHtml(char.classSpec)}"></td>
