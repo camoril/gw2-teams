@@ -1267,10 +1267,28 @@
             const select = document.getElementById('quickAddSpec');
             select.innerHTML = '<option value="">Select Profession/Spec</option>';
             
-            // Sort specs alphabetically
-            const specs = Object.keys(boonsByClass).sort();
+            // Define valid specs per role
+            const roleSpecMap = {
+                "support-stab": ["guardian-firebrand", "mesmer-chronomancer", "revenant-herald", "guardian-core"],
+                "support-cleanse": ["elementalist-tempest", "engineer-scrapper", "ranger-druid", "necromancer-scourge", "guardian-firebrand"],
+                "dps-melee": ["guardian-dragonhunter", "guardian-willbender", "warrior-berserker", "warrior-spellbreaker", "warrior-bladesworn", "revenant-vindicator", "revenant-herald", "engineer-holosmith", "engineer-scrapper", "necromancer-reaper", "thief-daredevil"],
+                "dps-ranged": ["elementalist-weaver", "elementalist-catalyst", "elementalist-tempest", "necromancer-scourge", "necromancer-harbinger", "mesmer-virtuoso", "mesmer-mirage", "ranger-soulbeast", "engineer-mechanist", "thief-deadeye", "thief-specter"],
+                "dps-strip": ["necromancer-scourge", "mesmer-chronomancer", "warrior-spellbreaker"],
+                "roamer": [] // All
+            };
+
+            // Get valid specs for this role, or all if not defined/roamer
+            const validSpecs = roleSpecMap[role] || [];
             
-            specs.forEach(spec => {
+            // Sort specs alphabetically
+            const allSpecs = Object.keys(boonsByClass).sort();
+            
+            allSpecs.forEach(spec => {
+                // Filter: if validSpecs is empty (roamer), show all. Else show only if in list.
+                if (validSpecs.length > 0 && !validSpecs.includes(spec)) {
+                    return;
+                }
+
                 const parts = spec.split('-');
                 const className = capitalize(parts[0]);
                 const specName = parts[1] ? capitalize(parts[1]) : 'Core';
